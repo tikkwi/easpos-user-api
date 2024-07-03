@@ -1,5 +1,5 @@
 import { AppController } from '@common/decorator/app_controller.decorator';
-import { Body, Post } from '@nestjs/common';
+import { Body, Get, Post } from '@nestjs/common';
 import { UserAppService } from './user_app.service';
 import { CreateUserDto } from '@common/dto/user.dto';
 import { CreateMerchantDto } from '@common/dto/merchant.dto';
@@ -16,5 +16,10 @@ export class UserAppController {
   @Post('create-user')
   async createUser(@Body() dto: CreateUserDto) {
     return await this.service.createUser(dto);
+  }
+
+  @Get('test')
+  async test() {
+    return this.service.test();
   }
 }
