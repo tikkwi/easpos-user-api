@@ -1,5 +1,5 @@
 import { CreateUserDto } from '@common/dto/user.dto';
-import { IsMongoId, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
+import { IsMongoId, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateMerchantRoleDto } from '../merchant_user_role/merchant_user_role.dto';
 import { MerchantUserRole } from '../merchant_user_role/merchant_user_role.schema';
@@ -16,11 +16,12 @@ class MerchantRoleDto {
 }
 
 export class CreateMerchantUserDto extends CreateUserDto {
+   @ValidateIf((o) => !o.merchantId)
    @ValidateNested()
    @Type(() => MerchantRoleDto)
-   role: MerchantUserRole;
+   roleDto?: MerchantUserRole;
 
-   @IsOptional()
+   @ValidateIf((o) => !o.role)
    @IsMongoId()
-   merchantId: string;
+   merchantId?: string;
 }
