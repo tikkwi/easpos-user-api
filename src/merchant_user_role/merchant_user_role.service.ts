@@ -11,7 +11,7 @@ import { Merchant } from '@common/schema/merchant.schema';
 import { Repository } from '@common/core/repository';
 import { MerchantUserRole } from './merchant_user_role.schema';
 import { AppRedisService } from '@common/core/app_redis/app_redis.service';
-import { APP_MERCHANT } from '@common/constant/app_context.constant';
+import { APP_MERCHANT } from '@common/constant/db.constant';
 
 @AppService()
 export class MerchantUserRoleService extends CoreService {
@@ -26,24 +26,23 @@ export class MerchantUserRoleService extends CoreService {
    }
 
    async getRole({ id, isOwner, merchantId }: GetMerchantUserRoleDto) {
-      return {
-         data: await this.repository.findOne({
-            filter: { id, isOwner, merchant: await this.getMerchant(merchantId) },
-         }),
-      };
+      const merchant = await this.getMerchant(merchantId);
+      if (!merchant) throw new BadRequestException('Merchant not found');
+
+      return await this.repository.findOne({
+         filter: { id, isOwner, merchant: merchantId ?? (await this.db.get(APP_MERCHANT)) },
+      });
    }
 
    async createRole({ merchantId, isOwner, ...dto }: CreateMerchantUserRoleDto) {
       if (isOwner) {
          const { data: ownerRole } = await this.getRole({ isOwner: true, merchantId });
          if (ownerRole) throw new BadRequestException('Owner role already exists');
-         return {
-            data: await this.repository.create({ isOwner: true, merchant: merchantId as any }),
-         };
+         return await this.repository.create({ isOwner: true, merchant: merchantId as any });
       } else {
          const merchant = await this.db.get<Merchant>(APP_MERCHANT);
          if (!merchant) throw new ForbiddenException();
-         return { data: await this.repository.create({ isOwner: false, ...dto, merchant }) };
+         return await this.repository.create({ isOwner: false, ...dto, merchant });
       }
    }
 
