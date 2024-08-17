@@ -21,11 +21,18 @@ export class CustomerTierService extends CoreService {
 
    async getTier({ id, isBaseTier }: GetTierDto) {
       return await this.repository.findOne({
-         filter: { id, isBaseTier, merchant: this.db.get(APP_MERCHANT) },
+         filter: {
+            id,
+            isBaseTier,
+            merchant: (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant._id,
+         },
       });
    }
 
    async createTier(dto: CreateCustomerTierDto) {
-      return await this.repository.create({ ...dto, merchant: await this.db.get(APP_MERCHANT) });
+      return await this.repository.create({
+         ...dto,
+         merchant: (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant,
+      });
    }
 }

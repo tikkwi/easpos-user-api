@@ -1,22 +1,24 @@
 import { Module } from '@nestjs/common';
 import { UserAppModule } from './user_app/user_app.module';
-import { getGrpcClient } from '@common/utils/misc';
-import { MERCHANT } from '@common/constant';
-import { ClientsModule } from '@nestjs/microservices';
 import { CoreModule } from '@common/core/module/core.module';
 import { CoreHttpModule } from '@common/core/module/core_http.module';
-
-const [clients, providers] = getGrpcClient([MERCHANT]);
+import { MerchantUserRoleModule } from './merchant_user_role/merchant_user_role.module';
+import { MerchantUserModule } from './merchant_user/merchant_user.module';
+import { CustomerModule } from './customer/customer.module';
+import { PartnerModule } from './partner/partner.module';
+import { CustomerTierModule } from './customer_tier/customer_tier.module';
 
 @Module({
-   imports: [CoreModule, CoreHttpModule, ClientsModule.register(clients), UserAppModule],
+   imports: [
+      CoreModule,
+      CoreHttpModule,
+      UserAppModule,
+      MerchantUserRoleModule,
+      MerchantUserModule,
+      CustomerTierModule,
+      CustomerModule,
+      PartnerModule,
+   ],
    controllers: [],
-   providers: [...providers],
 })
 export class AppModule {}
-
-// export class AppModule implements NestModule {
-//    configure(consumer: MiddlewareConsumer) {
-//       consumer.apply(TransformRequestMiddleware).forRoutes('*');
-//    }
-// }

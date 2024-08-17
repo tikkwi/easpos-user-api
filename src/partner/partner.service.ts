@@ -1,20 +1,23 @@
 import { AppService } from '@common/decorator/app_service.decorator';
-import { CoreService } from '@common/core/service/core.service';
-import { CreateUserDto, GetUserDto, PartnerServiceMethods } from '@common/dto/user.dto';
+import { CreateUserDto, GetUserDto, LoginDto } from '@common/shared/user/user.dto';
 import { ContextService } from '@common/core/context/context.service';
 import { Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
+import { MERCHANT, REPOSITORY } from '@common/constant';
 import { Repository } from '@common/core/repository';
 import { Partner } from '@common/schema/partner.schema';
 import { AppRedisService } from '@common/core/app_redis/app_redis.service';
 import { APP_MERCHANT } from '@common/constant/db.constant';
+import { UserService } from '@common/shared/user/user.service';
+import { getServiceToken } from '@common/utils/misc';
+import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 
 @AppService()
-export class PartnerService extends CoreService implements PartnerServiceMethods {
+export class PartnerService extends UserService {
    constructor(
       protected readonly context: ContextService,
-      private readonly db: AppRedisService,
-      @Inject(REPOSITORY) private readonly repository: Repository<Partner>,
+      protected readonly db: AppRedisService,
+      @Inject(REPOSITORY) protected readonly repository: Repository<Partner>,
+      @Inject(getServiceToken(MERCHANT)) private readonly merchantService: MerchantServiceMethods,
    ) {
       super();
    }
@@ -23,7 +26,17 @@ export class PartnerService extends CoreService implements PartnerServiceMethods
       return await this.repository.findOne({ filter: dto });
    }
 
-   async createPartner(dto: CreateUserDto) {
-      return await this.repository.create({ ...dto, merchant: await this.db.get(APP_MERCHANT) });
+   async createUser(dto: CreateUserDto) {
+      return await this.repository.create({
+         ...dto,
+         merchant: (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant,
+      });
+   }
+
+   async loginUser(dto: LoginDto) {
+      return await this.login(
+         dto,
+         async (id) => (await this.merchantService.merchantWithAuth({ id })).data,
+      );
    }
 }

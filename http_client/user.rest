@@ -1,0 +1,10 @@
+@user = merchant
+
+# @name Test
+# @no-log
+GET {{user-app}}/test
+
+<%%>
+
+###
+

@@ -1,4 +1,4 @@
-import { CreateUserDto } from '@common/dto/user.dto';
+import { CreateUserDto } from '@common/shared/user/user.dto';
 import { IsMongoId, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateMerchantRoleDto } from '../merchant_user_role/merchant_user_role.dto';

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { getGrpcClient } from '@common/utils/misc';
+import { getGrpcClient, getRepositoryProvider } from '@common/utils/misc';
 import { MERCHANT } from '@common/constant';
 import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -20,7 +20,11 @@ const [clients, providers] = getGrpcClient([MERCHANT]);
       ]),
    ],
    controllers: [MerchantUserRoleController],
-   providers: [MerchantUserRoleService, ...providers],
+   providers: [
+      MerchantUserRoleService,
+      getRepositoryProvider({ name: MerchantUserRole.name }),
+      ...providers,
+   ],
    exports: [MerchantUserRoleService],
 })
 export class MerchantUserRoleModule {}

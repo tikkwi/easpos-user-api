@@ -10,6 +10,6 @@ export class MerchantUserController {
 
    @Post('create')
    async create(@Body() dto: CreateMerchantUserDto) {
-      return this.service.create(dto);
+      return this.service.createUser(dto);
    }
 }

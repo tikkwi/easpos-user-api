@@ -30,7 +30,11 @@ export class MerchantUserRoleService extends CoreService {
       if (!merchant) throw new BadRequestException('Merchant not found');
 
       return await this.repository.findOne({
-         filter: { id, isOwner, merchant: merchantId ?? (await this.db.get(APP_MERCHANT)) },
+         filter: {
+            id,
+            isOwner,
+            merchant: merchantId ?? (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant._id,
+         },
       });
    }
 
@@ -40,7 +44,7 @@ export class MerchantUserRoleService extends CoreService {
          if (ownerRole) throw new BadRequestException('Owner role already exists');
          return await this.repository.create({ isOwner: true, merchant: merchantId as any });
       } else {
-         const merchant = await this.db.get<Merchant>(APP_MERCHANT);
+         const merchant = (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant;
          if (!merchant) throw new ForbiddenException();
          return await this.repository.create({ isOwner: false, ...dto, merchant });
       }
@@ -48,7 +52,6 @@ export class MerchantUserRoleService extends CoreService {
 
    private async getMerchant(merchantId?: string) {
       return await this.broker.request<Merchant>({
-         basicAuth: true,
          action: async (meta) => await this.merchantService.getMerchant({ id: merchantId }, meta),
          cache: false,
       });
