@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Partner, PartnerSchema } from '@common/schema/partner.schema';
+import { Partner, PartnerSchema } from './partner.schema';
 import { PartnerService } from './partner.service';
 import { getGrpcClient, getRepositoryProvider } from '@common/utils/misc';
 import { PartnerController } from './partner.controller';

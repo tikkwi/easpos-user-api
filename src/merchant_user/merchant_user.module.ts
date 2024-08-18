@@ -3,7 +3,7 @@ import { getGrpcClient, getRepositoryProvider } from '@common/utils/misc';
 import { MERCHANT } from '@common/constant';
 import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MerchantUser, MerchantUserSchema } from '@common/schema/merchant_user.schema';
+import { MerchantUser, MerchantUserSchema } from './merchant_user.schema';
 import { MerchantUserService } from './merchant_user.service';
 import { MerchantUserController } from './merchant_user.controller';
 import { MerchantUserRoleModule } from '../merchant_user_role/merchant_user_role.module';

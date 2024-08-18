@@ -3,7 +3,7 @@ import { ContextService } from '@common/core/context/context.service';
 import { Inject } from '@nestjs/common';
 import { MERCHANT, REPOSITORY } from '@common/constant';
 import { Repository } from '@common/core/repository';
-import { MerchantUser } from '@common/schema/merchant_user.schema';
+import { MerchantUser } from './merchant_user.schema';
 import { CreateMerchantUserDto } from './merchant_user.dto';
 import { MerchantUserRoleService } from '../merchant_user_role/merchant_user_role.service';
 import { LoginDto } from '@common/shared/user/user.dto';

@@ -4,7 +4,7 @@ import { ContextService } from '@common/core/context/context.service';
 import { Inject } from '@nestjs/common';
 import { MERCHANT, REPOSITORY } from '@common/constant';
 import { Repository } from '@common/core/repository';
-import { Customer } from '@common/schema/customer.schema';
+import { Customer } from './customer.schema';
 import { CreateCustomerDto } from './customer.dto';
 import { CustomerTierService } from '../customer_tier/customer_tier.service';
 import { AppRedisService } from '@common/core/app_redis/app_redis.service';

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { getGrpcClient, getRepositoryProvider } from '@common/utils/misc';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Customer, CustomerSchema } from '@common/schema/customer.schema';
+import { Customer, CustomerSchema } from './customer.schema';
 import { CustomerService } from './customer.service';
 import { CustomerController } from './customer.controller';
 import { MERCHANT } from '@common/constant';

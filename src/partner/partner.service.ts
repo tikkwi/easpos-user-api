@@ -4,7 +4,7 @@ import { ContextService } from '@common/core/context/context.service';
 import { Inject } from '@nestjs/common';
 import { MERCHANT, REPOSITORY } from '@common/constant';
 import { Repository } from '@common/core/repository';
-import { Partner } from '@common/schema/partner.schema';
+import { Partner } from './partner.schema';
 import { AppRedisService } from '@common/core/app_redis/app_redis.service';
 import { APP_MERCHANT } from '@common/constant/db.constant';
 import { UserService } from '@common/shared/user/user.service';
