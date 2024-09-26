@@ -7,7 +7,6 @@ import { Repository } from '@common/core/repository';
 import { CustomerTier } from './customer_tier.schema';
 import { CreateCustomerTierDto, GetTierDto } from './customer_tier.dto';
 import { AppRedisService } from '@common/core/app_redis/app_redis.service';
-import { APP_MERCHANT } from '@common/constant/db.constant';
 
 @AppService()
 export class CustomerTierService extends CoreService {
@@ -24,7 +23,7 @@ export class CustomerTierService extends CoreService {
          filter: {
             id,
             isBaseTier,
-            merchant: (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant._id,
+            merchant: (await this.db.get('merchant')).merchant._id,
          },
       });
    }
@@ -32,7 +31,7 @@ export class CustomerTierService extends CoreService {
    async createTier(dto: CreateCustomerTierDto) {
       return await this.repository.create({
          ...dto,
-         merchant: (await this.db.get<AppMerchant>(APP_MERCHANT)).merchant,
+         merchant: await this.db.get('merchant').merchant,
       });
    }
 }

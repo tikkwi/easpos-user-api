@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AppBrokerService } from '@common/core/app_broker/app_broker.service';
 import { getServiceToken } from '@common/utils/misc';
 import { MERCHANT } from '@common/constant';
-import { MerchantServiceMethods } from '@common/dto/merchant.dto';
+import { MerchantServiceMethods } from '@common/dto/service/merchant.dto';
 
 @Injectable()
 export class UserAppService {

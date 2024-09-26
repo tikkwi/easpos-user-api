@@ -1,16 +1,15 @@
-import { Schema } from '@nestjs/mongoose';
-import { BaseSchema } from '@common/schema/base.schema';
-import { AppProp } from '@common/decorator/app_prop.decorator';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import { Address } from '@shared/address/address.schema';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import { EStatus } from '@common/utils/enum';
 import { Type } from 'class-transformer';
+import BaseSchema from '@common/core/base.schema';
+import AppProp from '@common/decorator/app_prop.decorator';
+import Address from '@shared/address/address.schema';
+import { EStatus } from '@common/utils/enum';
 import { Status } from '@common/dto/entity.dto';
-import { Merchant } from '@common/schema/merchant.schema';
 
 @Schema()
-export class Branch extends BaseSchema {
+export default class Branch extends BaseSchema {
    @AppProp({ type: String })
    name: string;
 
@@ -32,3 +31,5 @@ export class Branch extends BaseSchema {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
    merchant: Merchant;
 }
+
+export const BranchSchema = SchemaFactory.createForClass(Branch);
