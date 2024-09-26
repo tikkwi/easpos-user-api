@@ -9,15 +9,14 @@ import { UserService } from '@shared/user/user.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import Customer from './customer.schema';
-import ContextService from '@common/core/context';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 
 @AppService()
 export default class CustomerService extends UserService<Customer> {
    constructor(
+      protected readonly appBroker: AppBrokerService,
       @Inject(REPOSITORY) protected readonly repository: Repository<Customer>,
       @Inject(getServiceToken(MERCHANT)) protected readonly merchantService: MerchantServiceMethods,
-      protected readonly appBroker: AppBrokerService,
       protected readonly db: AppRedisService,
       private readonly tierService: CustomerTierService,
    ) {
@@ -29,7 +28,7 @@ export default class CustomerService extends UserService<Customer> {
       return await this.repository.create({
          ...dto,
          tier,
-         merchant: ContextService.get('merchant').merchant,
+         merchant: (await this.db.get('merchant')).merchant,
       });
    }
 }

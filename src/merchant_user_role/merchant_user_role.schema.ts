@@ -1,13 +1,13 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { AppProp } from '@common/decorator/app_prop.decorator';
 import { ValidateIf } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import { Type } from 'class-transformer';
 import { UserRole } from '@common/dto/entity.dto';
-import { Merchant } from '@common/schema/merchant.schema';
+import AppProp from '@common/decorator/app_prop.decorator';
+import BaseSchema from '@common/core/base.schema';
 
 @Schema()
-export class MerchantUserRole {
+export default class MerchantUserRole extends BaseSchema {
    @ValidateIf((o) => !o.isOwner)
    @AppProp({ type: SchemaTypes.Mixed })
    @Type(() => UserRole)

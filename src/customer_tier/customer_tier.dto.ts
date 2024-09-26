@@ -1,7 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
-import { CustomerTier } from './customer_tier.schema';
 import { CoreDto } from '@common/dto/core.dto';
 import { IsBoolean, IsMongoId, ValidateIf } from 'class-validator';
+import CustomerTier from './customer_tier.schema';
 
 export class GetTierDto {
    @ValidateIf((o) => o.isBaseTier === undefined)

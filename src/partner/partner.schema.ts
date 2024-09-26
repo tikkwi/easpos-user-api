@@ -1,11 +1,10 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from '@common/schema/user.schema';
-import { AppProp } from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
-import { Merchant } from '@common/schema/merchant.schema';
+import User from '@shared/user/user.schema';
+import AppProp from '@common/decorator/app_prop.decorator';
 
 @Schema()
-export class Partner extends User {
+export default class Partner extends User {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
    merchant: Merchant;
 }

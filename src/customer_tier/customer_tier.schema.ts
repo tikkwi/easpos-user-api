@@ -1,11 +1,12 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import { Type } from 'class-transformer';
-import { Allowance } from '../allowance/allowance.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
+import Allowance from '@shared/allowance/allowance.schema';
+import BaseSchema from '@common/core/base.schema';
 
 @Schema()
-export default class CustomerTier {
+export default class CustomerTier extends BaseSchema {
    @AppProp({ type: String })
    name: string;
 

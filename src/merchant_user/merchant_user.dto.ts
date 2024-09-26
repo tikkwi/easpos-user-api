@@ -1,8 +1,8 @@
-import { CreateUserDto } from '@common/shared/user/user.dto';
 import { IsMongoId, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateMerchantRoleDto } from '../merchant_user_role/merchant_user_role.dto';
 import { MerchantUserRole } from '../merchant_user_role/merchant_user_role.schema';
+import { CreateUserDto } from '@shared/user/user.dto';
 
 class MerchantRoleDto {
    @ValidateIf((o) => !o.role)

@@ -1,7 +1,7 @@
 import { CoreDto } from '@common/dto/core.dto';
-import { MerchantUserRole } from './merchant_user_role.schema';
 import { IsBoolean, IsMongoId, IsOptional, ValidateIf } from 'class-validator';
 import { PickType } from '@nestjs/swagger';
+import MerchantUserRole from './merchant_user_role.schema';
 
 export class CreateMerchantRoleDto extends CoreDto<MerchantUserRole>(MerchantUserRole) {}
 
