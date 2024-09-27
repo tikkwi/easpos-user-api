@@ -1,10 +1,9 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BaseSchema } from '@common/schema/base.schema';
-import { AppProp } from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
-import { Allowance } from '../allowance/allowance.schema';
 import { EUser } from '@common/utils/enum';
 import { ValidateIf } from 'class-validator';
+import BaseSchema from '@common/core/base.schema';
+import AppProp from '@common/decorator/app_prop.decorator';
 
 @Schema()
 export class AllowanceCode extends BaseSchema {
@@ -15,7 +14,7 @@ export class AllowanceCode extends BaseSchema {
    expireAt: Date;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Allowance' })
-   allowance: Allowance;
+   allowance: AppSchema<Allowance>;
 
    //NOTE: for the referral program
    @AppProp({ type: Boolean, required: false })

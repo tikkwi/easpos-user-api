@@ -1,7 +1,6 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import { Type } from 'class-transformer';
 import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Address from '@shared/address/address.schema';
@@ -22,14 +21,17 @@ export default class Branch extends BaseSchema {
    mobileNos: string[];
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Address' })
-   address: Address;
+   address: AppSchema<Address>;
 
-   @AppProp({ type: SchemaTypes.Mixed, immutable: false, default: { status: EStatus.Pending } })
-   @Type(() => Status)
+   @AppProp({
+      type: SchemaTypes.Mixed,
+      immutable: false,
+      default: { status: EStatus.Pending, type: Status },
+   })
    status: Status;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
-   merchant: Merchant;
+   merchant: AppSchema<Merchant>;
 }
 
 export const BranchSchema = SchemaFactory.createForClass(Branch);

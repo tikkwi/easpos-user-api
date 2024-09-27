@@ -1,6 +1,5 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import { Type } from 'class-transformer';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Allowance from '@shared/allowance/allowance.schema';
 import BaseSchema from '@common/core/base.schema';
@@ -19,15 +18,14 @@ export default class CustomerTier extends BaseSchema {
    @AppProp({ type: Boolean, default: false })
    isBaseTier: boolean;
 
-   @AppProp({ type: SchemaTypes.Mixed, required: false })
-   @Type(() => Allowance)
+   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: Allowance })
    reward?: Allowance;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'CustomerTier', required: false })
-   nextTier?: CustomerTier;
+   nextTier?: AppSchema<CustomerTier>;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
-   merchant: Merchant;
+   merchant: AppSchema<Merchant>;
 }
 
 export const CustomerTierSchema = SchemaFactory.createForClass(CustomerTier);

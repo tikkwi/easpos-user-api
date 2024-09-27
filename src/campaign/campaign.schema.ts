@@ -33,7 +33,7 @@ export default class Campaign extends BaseSchema {
    terms?: string;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category', required: false })
-   type?: Category;
+   type?: AppSchema<Category>;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

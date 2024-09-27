@@ -1,6 +1,6 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BaseSchema } from '@common/schema/base.schema';
-import { AppProp } from '@common/decorator/app_prop.decorator';
+import BaseSchema from '@common/core/base.schema';
+import AppProp from '@common/decorator/app_prop.decorator';
 
 /*
  * NOTE:
@@ -11,7 +11,7 @@ import { AppProp } from '@common/decorator/app_prop.decorator';
  */
 
 @Schema()
-export class MerchantConfig extends BaseSchema {
+export default class MerchantConfig extends BaseSchema {
    @AppProp({ type: Boolean, default: false })
    mUsrMobileM: boolean;
 
