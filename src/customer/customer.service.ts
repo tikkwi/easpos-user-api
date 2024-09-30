@@ -11,8 +11,9 @@ import Repository from '@common/core/repository';
 import Customer from './customer.schema';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import MerchantAllowanceService from '../allowance/allowance.service';
-import { EMerchantAllowanceBenefit } from '@common/utils/enum';
+import { EMerchantAllowanceBenefit, EUser } from '@common/utils/enum';
 import { $dayjs } from '@common/utils/datetime';
+import AddressService from '@shared/address/address.service';
 
 @AppService()
 export default class CustomerService extends UserService<Customer> {
@@ -23,20 +24,26 @@ export default class CustomerService extends UserService<Customer> {
       protected readonly db: AppRedisService,
       private readonly tierService: CustomerTierService,
       private readonly allowanceService: MerchantAllowanceService,
+      private readonly addressService: AddressService,
    ) {
       super();
    }
 
-   async createUser(dto: CreateCustomerDto) {
+   async createUser({ context, addressId, ...dto }: CreateCustomerDto) {
       const { data: tier } = await this.tierService.getTier({ isBaseTier: true });
+      const { data: address } = addressId
+         ? await this.addressService.findById({ id: addressId })
+         : undefined;
       return await this.repository.create({
          ...dto,
+         address,
          tier,
-         merchant: (await this.db.get('merchant')).merchant,
+         merchant: context.get('merchant').merchant,
+         type: EUser.Customer,
       });
    }
 
-   async addCustomerAllowance({ context, customerId, allowanceIds }: AddCustomerAllowanceDto) {
+   async addCustomerAllowance({ context, customerId, allowanceId }: AddCustomerAllowanceDto) {
       const { data: customer } = await this.repository.findOne({
          id: customerId,
          errorOnNotFound: true,
@@ -60,21 +67,19 @@ export default class CustomerService extends UserService<Customer> {
          } else customer[point ? 'point' : 'cash'] += amount;
       };
 
-      for (const id of allowanceIds) {
-         const allowance = await this.allowanceService.monitorExpire({ id }, true);
-         if (
-            [EMerchantAllowanceBenefit.Point, EMerchantAllowanceBenefit.Cash].includes(
-               allowance.benefit.type,
-            )
+      const allowance = await this.allowanceService.monitorExpire({ id: allowanceId }, true);
+      if (
+         [EMerchantAllowanceBenefit.Point, EMerchantAllowanceBenefit.Cash].includes(
+            allowance.benefit.type,
          )
-            updateCredit(
-               allowance.expireAt,
-               allowance.benefit.bypassExtendability,
-               allowance.benefit.amount,
-               allowance.benefit.type === EMerchantAllowanceBenefit.Point,
-            );
-         else customer.allowances.push(allowance);
-      }
+      )
+         updateCredit(
+            allowance.expireAt,
+            allowance.benefit.bypassExtendability,
+            allowance.benefit.amount,
+            allowance.benefit.type === EMerchantAllowanceBenefit.Point,
+         );
+      else customer.allowances.push(allowance);
       return { data: await customer.save({ session: context.get('session') }) };
    }
 }
