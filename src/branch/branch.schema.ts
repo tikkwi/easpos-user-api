@@ -5,7 +5,6 @@ import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Address from '@shared/address/address.schema';
 import { EStatus } from '@common/utils/enum';
-import { Status } from '@common/dto/entity.dto';
 
 @Schema()
 export default class Branch extends BaseSchema {
@@ -23,12 +22,8 @@ export default class Branch extends BaseSchema {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Address' })
    address: AppSchema<Address>;
 
-   @AppProp({
-      type: SchemaTypes.Mixed,
-      immutable: false,
-      default: { status: EStatus.Pending, type: Status },
-   })
-   status: Status;
+   @AppProp({ type: String, enum: EStatus, default: EStatus.Active })
+   status: EStatus;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
    merchant: AppSchema<Merchant>;
