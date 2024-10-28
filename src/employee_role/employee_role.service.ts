@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject } from '@nestjs/common';
 import { MERCHANT, REPOSITORY } from '@common/constant';
-import { CreateMerchantUserRoleDto, GetMerchantUserRoleDto } from './merchant_user_role.dto';
+import { CreateEmployeeRoleDto, GetEmployeeRoleDto } from './employee_role.dto';
 import { getServiceToken } from '@common/utils/misc';
 import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 import AppService from '@common/decorator/app_service.decorator';
@@ -8,10 +8,10 @@ import CoreService from '@common/core/core.service';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
-import MerchantUserRole from './merchant_user_role.schema';
+import MerchantUserRole from './employee_role.schema';
 
 @AppService()
-export class MerchantUserRoleService extends CoreService {
+export class EmployeeRoleService extends CoreService {
    constructor(
       @Inject(REPOSITORY) protected readonly repository: Repository<MerchantUserRole>,
       private readonly broker: AppBrokerService,
@@ -21,7 +21,7 @@ export class MerchantUserRoleService extends CoreService {
       super();
    }
 
-   async getRole({ id, isOwner, merchantId }: GetMerchantUserRoleDto) {
+   async getRole({ id, isOwner, merchantId }: GetEmployeeRoleDto) {
       const merchant = await this.getMerchant(merchantId);
       if (!merchant) throw new BadRequestException('Merchant not found');
 
@@ -34,7 +34,7 @@ export class MerchantUserRoleService extends CoreService {
       });
    }
 
-   async createRole({ merchantId, isOwner, ...dto }: CreateMerchantUserRoleDto) {
+   async createRole({ merchantId, isOwner, ...dto }: CreateEmployeeRoleDto) {
       if (isOwner) {
          const { data: ownerRole } = await this.getRole({ isOwner: true, merchantId });
          if (ownerRole) throw new BadRequestException('Owner role already exists');

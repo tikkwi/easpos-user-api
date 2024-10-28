@@ -4,7 +4,7 @@ import MerchantAllowance from './allowance.schema';
 import Repository from '@common/core/repository';
 import { BadRequestException, Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
-import ProductService from '@shared/product/product.service';
+import ProductService from '../product/product.service';
 import UnitService from '@shared/unit/unit.service';
 import { GetPurchaseAllowanceDto } from './allowance.dto';
 import AllowanceCodeService from '@shared/allowance_code/allowance_code.service';

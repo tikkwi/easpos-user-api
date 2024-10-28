@@ -1,4 +1,4 @@
-import { BaseDto, PickTypeIf } from '@common/dto/core.dto';
+import { BaseDto, SelectionTypeIf } from '@common/dto/core.dto';
 import { IsMongoId } from 'class-validator';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { CreateUserDto } from '@shared/user/user.dto';
@@ -17,6 +17,6 @@ const guestPartial: Array<keyof CreateUserDto> = ['firstName', 'lastName', 'mail
 export class CreateCustomerDto extends IntersectionType(
    BaseDto,
    OmitType(CreateUserDto, guestPartial),
-   PickTypeIf((o) => !o.guest, CreateUserDto, guestPartial),
+   SelectionTypeIf((o) => !o.guest, CreateUserDto, guestPartial, true),
    PickType(Customer, ['guest']),
 ) {}

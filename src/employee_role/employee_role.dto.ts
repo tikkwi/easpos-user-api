@@ -1,11 +1,8 @@
-import { CoreDto } from '@common/dto/core.dto';
 import { IsBoolean, IsMongoId, IsOptional, ValidateIf } from 'class-validator';
 import { PickType } from '@nestjs/swagger';
-import MerchantUserRole from './merchant_user_role.schema';
+import EmployeeRole from './employee_role.schema';
 
-export class CreateMerchantRoleDto extends CoreDto<MerchantUserRole>(MerchantUserRole) {}
-
-export class GetMerchantUserRoleDto {
+export class GetEmployeeRoleDto {
    @IsOptional()
    @IsBoolean()
    isOwner?: boolean;
@@ -19,7 +16,7 @@ export class GetMerchantUserRoleDto {
    merchantId?: string;
 }
 
-export class CreateMerchantUserRoleDto extends PickType(MerchantUserRole, [
+export class CreateEmployeeRoleDto extends PickType(EmployeeRole, [
    'role',
    'isOwner',
    'basicSalary',

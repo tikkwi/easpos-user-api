@@ -1,25 +1,24 @@
 import { IsMongoId, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateMerchantRoleDto } from '../merchant_user_role/merchant_user_role.dto';
-import { MerchantUserRole } from '../merchant_user_role/merchant_user_role.schema';
+import { CreateEmployeeRoleDto } from '../employee_role/employee_role.dto';
 import { CreateUserDto } from '@shared/user/user.dto';
 
-class MerchantRoleDto {
+class EmployeeRoleDto {
    @ValidateIf((o) => !o.role)
    @IsMongoId()
    roleId?: string;
 
    @ValidateIf((o) => !o.roleId)
    @ValidateNested()
-   @Type(() => CreateMerchantRoleDto)
-   role?: CreateMerchantRoleDto;
+   @Type(() => CreateEmployeeRoleDto)
+   role?: CreateEmployeeRoleDto;
 }
 
-export class CreateMerchantUserDto extends CreateUserDto {
+export class CreateEmployeeDto extends CreateUserDto {
    @ValidateIf((o) => !o.merchantId)
    @ValidateNested()
-   @Type(() => MerchantRoleDto)
-   roleDto?: MerchantUserRole;
+   @Type(() => EmployeeRoleDto)
+   roleDto?: EmployeeRoleDto;
 
    @ValidateIf((o) => !o.role)
    @IsMongoId()
