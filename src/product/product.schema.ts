@@ -83,10 +83,14 @@ export class BaseProduct extends BaseSchema {
    tags?: AppSchema<Category>[];
 }
 
+//NOTE: everywhere refer to product mean product variant: not barefoot product
 @Schema()
 export default class Product extends BaseProduct {
    @AppProp({ type: String, enum: EProduct })
    type: EProduct;
+
+   @AppProp({ type: Boolean })
+   inHouse: boolean;
 
    @AppProp({ type: [String], enum: EProductStatus })
    statuses: EProductStatus[];

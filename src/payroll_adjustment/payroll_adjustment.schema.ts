@@ -7,6 +7,12 @@ import Category from '@shared/category/category.schema';
 
 @Schema()
 export class PayrollAdjustment extends BaseSchema {
+   @AppProp({ type: String })
+   name: string;
+
+   @AppProp({ type: String, required: false })
+   description?: string;
+
    @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
    amount: Amount;
 

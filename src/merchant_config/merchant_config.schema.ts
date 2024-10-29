@@ -38,6 +38,9 @@ export default class MerchantConfig extends BaseSchema {
 
    @AppProp({ type: Boolean, default: false })
    pointExchange: boolean;
+
+   @AppProp({ type: Boolean, default: false })
+   requirePayrollApprove: boolean;
 }
 
 export const MerchantConfigSchema = SchemaFactory.createForClass(MerchantConfig);
