@@ -14,12 +14,12 @@ import {
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import ProductUnit from '../product_unit/product_unit.schema';
+import StockUnit from '../stock_unit/stock_unit.schema';
 import { EInspectionStatus, EProcurementStatus } from '@common/utils/enum';
 import Expense from '../expense/expense.schema';
 import Category from '@shared/category/category.schema';
 
-class StockPurchased extends PickType(ProductUnit, [
+class StockPurchased extends PickType(StockUnit, [
    'qrCode',
    'unitQuantity',
    'model',

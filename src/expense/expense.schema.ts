@@ -19,8 +19,8 @@ export default class Expense extends BaseSchema {
    @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
    amount: Amount;
 
-   @AppProp({ type: Number }) //Inclusive
-   taxAmount?: number;
+   @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
+   taxAmount: Amount; //NOTE: Inclusive
 
    @AppProp({ type: Boolean })
    isTax: boolean;
