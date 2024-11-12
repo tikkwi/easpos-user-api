@@ -16,7 +16,7 @@ import Shelf from '../shelf/shelf.schema';
 @Schema()
 export default class StockUnit extends BaseSchema {
    @AppProp({ type: String, unique: true, required: false })
-   qrCode?: string;
+   barCode?: string;
 
    //NOTE: by merchant's inspection passed not supplier or product's qc passed status
    @AppProp({ type: Boolean, default: false })

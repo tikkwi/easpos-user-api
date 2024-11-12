@@ -1,16 +1,75 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
-import Allowance from '@shared/allowance/allowance.schema';
 import BaseSchema from '@common/core/base.schema';
+import {
+   IsBoolean,
+   IsEnum,
+   IsNumber,
+   IsOptional,
+   IsString,
+   Max,
+   Min,
+   ValidateIf,
+} from 'class-validator';
+import { EClientPermission } from '@common/utils/enum';
+import { IsAppString } from '@common/validator';
+import { CALENDAR_DATE } from '@common/constant';
+
+class TierBenefit {
+   @IsString()
+   name: string;
+
+   @IsString()
+   description: string;
+
+   @IsBoolean()
+   isCouponReward: boolean;
+
+   @ValidateIf((o) => o.isCouponReward)
+   @IsOptional()
+   @IsString()
+   coupon?: string;
+
+   @ValidateIf((o) => !o.isCouponReward)
+   @IsOptional()
+   @IsEnum(EClientPermission, { each: true })
+   permissions?: Array<EClientPermission>;
+}
+
+class SustainPoint {
+   @IsAppString('include', { arr: CALENDAR_DATE })
+   cycleUnit: CalendarDate;
+
+   //TODO: validate max_day -> 30, max_week -> 4, max_month -> 12, max_year -> 10
+   @IsNumber()
+   @Min(0)
+   cycleAmount: number;
+
+   @IsNumber()
+   @Min(0)
+   pointAmount: number;
+}
 
 @Schema()
 export default class CustomerTier extends BaseSchema {
    @AppProp({ type: String })
    name: string;
 
-   @AppProp({ type: String })
-   description: string;
+   @AppProp({ type: Number })
+   pointRequired: number;
+
+   @AppProp({ type: String, required: false })
+   description?: string;
+
+   //TODO: need manual validation not to misaligned other tiers
+   @AppProp({ type: Number })
+   @Min(0)
+   @Max(100)
+   level: number;
+
+   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: SustainPoint })
+   sustainPoint?: SustainPoint;
 
    @AppProp({ type: String, required: false })
    icon?: string;
@@ -18,14 +77,8 @@ export default class CustomerTier extends BaseSchema {
    @AppProp({ type: Boolean, default: false })
    isBaseTier: boolean;
 
-   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: Allowance })
-   reward?: Allowance;
-
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'CustomerTier', required: false })
-   nextTier?: AppSchema<CustomerTier>;
-
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
-   merchant: AppSchema<Merchant>;
+   @AppProp({ type: [SchemaTypes.Mixed] }, { type: TierBenefit })
+   benefits: TierBenefit[];
 }
 
 export const CustomerTierSchema = SchemaFactory.createForClass(CustomerTier);

@@ -2,13 +2,13 @@ import { Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import { CreateCustomerTierDto, GetTierDto } from './customer_tier.dto';
 import AppService from '@common/decorator/app_service.decorator';
-import CoreService from '@common/core/core.service';
+import ACoreService from '@common/core/core.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import CustomerTier from './customer_tier.schema';
 
 @AppService()
-export class CustomerTierService extends CoreService {
+export class CustomerTierService extends ACoreService {
    constructor(
       @Inject(REPOSITORY) protected readonly repository: Repository<CustomerTier>,
       private readonly db: AppRedisService,

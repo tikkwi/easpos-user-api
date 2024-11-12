@@ -8,7 +8,7 @@ import {
    ValidateNested,
 } from 'class-validator';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { EAllowance, EMerchantAllowanceBenefit } from '@common/utils/enum';
+import { EMerchantAllowanceBenefit, EPriceAdjustment } from '@common/utils/enum';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import Allowance from '@shared/allowance/allowance.schema';
@@ -75,8 +75,8 @@ export default class MerchantAllowance extends Allowance {
    @AppProp({ type: SchemaTypes.Mixed }, { type: AllowanceBenefit })
    benefit: AllowanceBenefit;
 
-   @AppProp({ type: String, enum: EAllowance })
-   type: EAllowance;
+   @AppProp({ type: String, enum: EPriceAdjustment })
+   type: EPriceAdjustment;
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'CustomerTier' }] })
    declare tierTrigger: AppSchema<CustomerTier>[];

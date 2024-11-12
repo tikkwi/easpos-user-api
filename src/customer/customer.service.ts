@@ -5,7 +5,7 @@ import { CustomerTierService } from '../customer_tier/customer_tier.service';
 import { getServiceToken } from '@common/utils/misc';
 import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 import AppService from '@common/decorator/app_service.decorator';
-import { UserService } from '@shared/user/user.service';
+import { AUserService } from '@shared/user/user.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import Customer from './customer.schema';
@@ -16,7 +16,7 @@ import { $dayjs } from '@common/utils/datetime';
 import AddressService from '@shared/address/address.service';
 
 @AppService()
-export default class CustomerService extends UserService<Customer> {
+export default class CustomerService extends AUserService<Customer> {
    constructor(
       protected readonly appBroker: AppBrokerService,
       @Inject(REPOSITORY) protected readonly repository: Repository<Customer>,

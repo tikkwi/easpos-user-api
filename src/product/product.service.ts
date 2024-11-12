@@ -1,4 +1,4 @@
-import CoreService from '@common/core/core.service';
+import ACoreService from '@common/core/core.service';
 import { CreateProductDto } from './product.dto';
 import Product from './product.schema';
 import { ECategory } from '@common/utils/enum';
@@ -6,22 +6,14 @@ import AppService from '@common/decorator/app_service.decorator';
 import { Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import Repository from '@common/core/repository';
-import { FindByCodeDto } from '@common/dto/core.dto';
 
 @AppService()
-export default class ProductService extends CoreService<Product> {
+export default class ProductService extends ACoreService<Product> {
    constructor(
       @Inject(REPOSITORY) protected readonly repository: Repository<Product>,
       private readonly category: CategoryService,
    ) {
       super();
-   }
-
-   async getProduct({ code }: FindByCodeDto) {
-      return this.repository.findOne({
-         filter: { qrCode: code },
-         errorOnNotFound: true,
-      });
    }
 
    async createProduct({ tags: tagDto, unitId, category, context, ...dto }: CreateProductDto) {
