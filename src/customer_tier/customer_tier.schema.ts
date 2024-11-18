@@ -64,7 +64,7 @@ export default class CustomerTier extends BaseSchema {
 
    //TODO: need manual validation not to misaligned other tiers
    @AppProp({ type: Number })
-   @Min(0)
+   @Min(1)
    @Max(100)
    level: number;
 
@@ -73,9 +73,6 @@ export default class CustomerTier extends BaseSchema {
 
    @AppProp({ type: String, required: false })
    icon?: string;
-
-   @AppProp({ type: Boolean, default: false })
-   isBaseTier: boolean;
 
    @AppProp({ type: [SchemaTypes.Mixed] }, { type: TierBenefit })
    benefits: TierBenefit[];

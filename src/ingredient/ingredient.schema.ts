@@ -17,14 +17,7 @@ class IngredientBlendAmount {
 }
 
 @Schema()
-export default class Ingredient extends OmitType(Product, [
-   'type',
-   'inHouse',
-   'subType',
-   'basePrice',
-   'tagPrices',
-   'subAllowance',
-]) {
+export default class Ingredient extends OmitType(Product, ['type', 'inHouse', 'subType']) {
    @AppProp({ type: [SchemaTypes.Mixed] }, { type: IngredientBlendAmount })
    blendAmount: IngredientBlendAmount[];
 }

@@ -22,6 +22,8 @@ export default class StockUnit extends BaseSchema {
    @AppProp({ type: Boolean, default: false })
    isQcPassed: boolean;
 
+   //TODO to validate at most one unit category as defined in product schema and
+   // need to add there first if need unit and don't have
    @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
    unitQuantity: Amount;
 

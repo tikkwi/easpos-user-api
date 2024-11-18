@@ -2,7 +2,7 @@ import { IsMongoId, IsOptional, ValidateNested } from 'class-validator';
 import { CoreDto } from '@common/dto/core.dto';
 import { OmitType } from '@nestjs/swagger';
 import Product from './product.schema';
-import { CategoryDto, CreateCategoryDto } from '@common/dto/action.dto';
+import { CategoryDto } from '@common/dto/action.dto';
 import { Type } from 'class-transformer';
 
 export class CreateProductDto extends OmitType(CoreDto(Product), ['category', 'tags', 'unit']) {
@@ -12,7 +12,7 @@ export class CreateProductDto extends OmitType(CoreDto(Product), ['category', 't
    tags?: CategoryDto[];
 
    @ValidateNested({ each: true })
-   @Type(() => OmitType(CreateCategoryDto, ['type']))
+   @Type(() => OmitType(CategoryDto, ['type']))
    category: CategoryDto;
 
    @IsOptional()

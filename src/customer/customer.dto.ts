@@ -1,5 +1,5 @@
 import { BaseDto, SelectionTypeIf } from '@common/dto/core.dto';
-import { IsMongoId } from 'class-validator';
+import { IsMongoId, IsOptional } from 'class-validator';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { CreateUserDto } from '@shared/user/user.dto';
 import Customer from './customer.schema';
@@ -20,3 +20,9 @@ export class CreateCustomerDto extends IntersectionType(
    SelectionTypeIf((o) => !o.guest, CreateUserDto, guestPartial, true),
    PickType(Customer, ['guest']),
 ) {}
+
+export class GetCustomerDto {
+   @IsOptional()
+   @IsMongoId()
+   id?: string | ObjectId;
+}

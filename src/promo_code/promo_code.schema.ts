@@ -1,24 +1,17 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { OmitType } from '@nestjs/swagger';
-import StockLocation from '../stock_location/stock_location.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
-import { Dimension } from '@common/dto/entity.dto';
+import APromoCode from '@common/schema/promo_code.schema';
+import PriceAdjustment from '../price_adjustment/price_adjustment.schema';
+import { Sale } from '../sale/sale.schema';
 
 @Schema()
-export default class Section extends OmitType(StockLocation, [
-   'mail',
-   'isWarehouse',
-   'mobileNo',
-   'operatingSchedule',
-   'address',
-]) {
-   //NOTE: at stock_location
-   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: Dimension })
-   position: Dimension;
+export default class PromoCode extends APromoCode {
+   @AppProp({ type: SchemaTypes.ObjectId, ref: 'PriceAdjustment' })
+   promotion: PriceAdjustment;
 
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'StockLocation' })
-   stockLocation: StockLocation;
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Sale' }] })
+   usage: Array<AppSchema<Sale>>;
 }
 
-export const Promo_codeSchema = SchemaFactory.createForClass(Section);
+export const PromoCodeSchema = SchemaFactory.createForClass(PromoCode);

@@ -2,9 +2,17 @@ import { SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import { BaseUser } from '@shared/user/user.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
-import Allowance from '@shared/allowance/allowance.schema';
 import CustomerTier from '../customer_tier/customer_tier.schema';
 import { TimedCredit } from '@common/dto/entity.dto';
+import { IsMongoId } from 'class-validator';
+
+class ClaimedPromoCode {
+   @IsMongoId()
+   promoCode: string;
+
+   @IsMongoId({ each: true })
+   usage: Array<string>;
+}
 
 export default class Customer extends BaseUser {
    @AppProp({ type: Boolean })
@@ -31,8 +39,8 @@ export default class Customer extends BaseUser {
    @AppProp({ type: SchemaTypes.Mixed, default: {} })
    timedPoint?: Record<number, number>;
 
-   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'MerchantAllowance' }], default: [] })
-   allowances?: AppSchema<Allowance>[];
+   @AppProp({ type: [SchemaTypes.Mixed], default: [] }, { type: ClaimedPromoCode })
+   promoCodes?: Array<ClaimedPromoCode>;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Merchant' })
    merchant: Merchant;
