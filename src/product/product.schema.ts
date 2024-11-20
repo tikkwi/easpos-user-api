@@ -5,16 +5,19 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
 import { EProduct, EProductStatus } from '@common/utils/enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Field } from '@common/dto/entity.dto';
+import { Amount, Field } from '@common/dto/entity.dto';
 
 export class PriceVariant {
-   @IsMongoId() //NOTE: tag
+   @IsMongoId() //NOTE:tag category
    id: string;
 
    @IsNumber({ maxDecimalPlaces: 2 })
    @Min(0.01)
    @Max(0.99)
    baseMultiplier: number;
+
+   @IsBoolean() //NOTE:is stackable to promotion
+   isStackable: boolean;
 
    @ValidateIf((o) => !o.basePrice)
    @IsBoolean()
@@ -34,11 +37,16 @@ export class BaseProduct extends BaseSchema {
    @AppProp({ type: [String], required: false })
    attachments?: string[];
 
-   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Category' }], required: false })
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Category' }], default: [] })
    tags?: AppSchema<Category>[];
 }
 
-//NOTE: everywhere refer to product mean product variant: not barefoot product
+/*
+ * TODO: updating tags in product will apply to all (variant, stock_unit).
+ *  updating tags in variant will apply to every associated stock_unit
+ * NOTE: everywhere refer to product mean product variant: not barefoot product
+ * */
+
 @Schema()
 export default class Product extends BaseProduct {
    @AppProp({ type: String, enum: EProduct })
@@ -53,8 +61,21 @@ export default class Product extends BaseProduct {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
    category: AppSchema<Category>;
 
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category', required: false })
-   unit?: AppSchema<Category>;
+   @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
+   unitQuantity: Amount;
+
+   /*
+    * unitQuantity is how much unit include in a single stock unit
+    * eg. let say 1 unit of grape => 1 viss
+    *
+    * minUnit is the least possible unit that can sell. if stock_unit only left
+    * less than minUnit, stock out.
+    * eg. grape can sell minimum of 0.1 unit (0.1 viss)
+    * */
+   @AppProp({ type: Number })
+   @Min(0.001)
+   @Max(0.9)
+   minUnit: number;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
    subType: AppSchema<Category>;

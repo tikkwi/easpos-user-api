@@ -2,13 +2,23 @@ import { IsMongoId, IsOptional, IsString, ValidateNested } from 'class-validator
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 
-export class ProductPurchased {
+class StockUnitPurchasedDto {
    @IsMongoId()
-   variantId: string;
+   barcode: string;
 
    @ValidateNested()
    @Type(() => Amount)
-   amount: Amount;
+   quantity: Amount;
+}
+
+export class ProductPurchasedDto {
+   //TODO: validate all are following variant's unit
+   @ValidateNested({ each: true })
+   @Type(() => StockUnitPurchasedDto)
+   stockUnits: Array<StockUnitPurchasedDto>;
+
+   @IsMongoId()
+   variantId: string;
 
    @IsOptional()
    @IsString()
@@ -31,6 +41,6 @@ export class NewSaleDto {
    paymentMethodId: string;
 
    @ValidateNested({ each: true })
-   @Type(() => ProductPurchased)
-   products: Array<ProductPurchased>;
+   @Type(() => ProductPurchasedDto)
+   products: Array<ProductPurchasedDto>;
 }

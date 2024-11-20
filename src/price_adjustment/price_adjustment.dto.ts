@@ -1,11 +1,19 @@
-import { IntersectionType, PickType } from '@nestjs/swagger';
-import { NewSaleDto, ProductPurchased } from '../sale/sale.dto';
-import { IsMongoId, IsNumber, IsOptional } from 'class-validator';
+import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
+import { NewSaleDto, ProductPurchasedDto } from '../sale/sale.dto';
+import { IsMongoId, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { Amount } from '@common/dto/entity.dto';
 
-export class GetApplicableProductAdjustmentDto extends IntersectionType(
-   ProductPurchased,
+export class GetProductBasePriceDto extends OmitType(ProductPurchasedDto, ['promoCode']) {}
+
+export class GetProductPriceDto extends IntersectionType(
+   ProductPurchasedDto,
    PickType(NewSaleDto, ['currencyId', 'paymentMethodId', 'customerId']),
-) {}
+) {
+   @ValidateNested()
+   @Type(() => Amount)
+   basePrice: number;
+}
 
 export class GetBaseAdjustmentQueryDto extends PickType(NewSaleDto, [
    'paymentMethodId',
@@ -22,3 +30,5 @@ export class GetBaseAdjustmentQueryDto extends PickType(NewSaleDto, [
    @IsNumber()
    tierLevel?: number;
 }
+
+export class GetApplicableSaleAdjustmentDto {}

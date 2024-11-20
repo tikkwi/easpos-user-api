@@ -22,7 +22,7 @@ export class ProductVariant extends IntersectionType(
    @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: Amount })
    basePrice?: Amount;
 
-   @AppProp({ type: [SchemaTypes.Mixed], required: false }, { type: PriceVariant })
+   @AppProp({ type: [SchemaTypes.Mixed], default: [] }, { type: PriceVariant })
    tagPrices?: PriceVariant[];
 }
 
