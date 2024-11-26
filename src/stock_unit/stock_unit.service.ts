@@ -8,7 +8,8 @@ import UnitService from '@shared/unit/unit.service';
 import { GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
 import { EProductUnitStatus } from '@common/utils/enum';
 import CustomerService from '../customer/customer.service';
-import { Amount } from '@common/dto/entity.dto';
+import { PriceVariant } from '../product/product.schema';
+import { FindByIdDto } from '@common/dto/core.dto';
 
 @AppService()
 export default class StockUnitService extends ACoreService<StockUnit> {
@@ -18,6 +19,15 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       private readonly customerService: CustomerService,
    ) {
       super();
+   }
+
+   async getStockLeft({ id }: Pick<FindByIdDto, 'id'>) {
+      let sL = 0;
+      const { data } = await this.repository.find({
+         filter: { productVariant: id, isOutOfStock: false },
+      });
+      data.forEach(({ stockLeft }) => (sL += stockLeft));
+      return { data: sL };
    }
 
    async getStockUnit({ barcode, variantId, populate, lean }: GetStockUnitDto) {
@@ -30,76 +40,73 @@ export default class StockUnitService extends ACoreService<StockUnit> {
 
    async getStockPurchased({
       barcode,
+      variantId,
       quantity,
       nextBatchOnStockOut,
       customerId,
+      isFoc,
    }: GetStockPurchasedDto) {
       const { data: baseUnit } = await this.unitService.getBase({ unitId: quantity.unitId });
       const { data: baseQuantity } = await this.unitService.exchangeUnit({ current: [quantity] });
-      const { data: customer } = await this.customerService.getCustomer({ id: customerId });
+      const { data: customer } = customerId
+         ? await this.customerService.getCustomer({ id: customerId })
+         : { data: undefined };
       let missingQuantity = baseQuantity;
-      const stocks: Array<{
+      const units: Array<{
          stock: StockUnit;
          quantity: number;
-         basePrice: Amount;
-         multiplier: number;
-         usedVariant: boolean;
-         isStackable: boolean;
       }> = [];
-      const stockIds: Array<ObjectId> = [];
+      let priceVariant: PriceVariant, stock: StockUnit;
+      const unitIds: Array<ObjectId> = [];
       const updateQuantity = (stk?: StockUnit) => {
          if (!stk?.isOutOfStock) {
-            const price = {
-               basePrice: stk.productVariant.basePrice,
-               multiplier: 1,
-               usedVariant: false,
-               isStackable: false,
-            };
-            const tags = new Set([
-               ...customer.tags.map((e: any) => e.toString()),
-               ...stk.tags.map((e: any) => e.toString()),
-            ]);
-            if (stk.productVariant.tagPrices.length) {
-               for (const { isStackable, id, baseMultiplier, foc } of stk.productVariant
-                  .tagPrices) {
-                  if (tags.has(id)) {
-                     if (foc) {
-                        price.multiplier = 0;
-                        price.usedVariant = true;
-                        break;
-                     }
-                     if (baseMultiplier < price.multiplier) {
-                        price.multiplier = baseMultiplier;
-                        price.usedVariant = true;
-                        price.isStackable = isStackable;
-                     }
-                  }
-               }
-            }
             const updQty =
                stk.stockLeft >= missingQuantity ? missingQuantity : missingQuantity - stk.stockLeft;
             missingQuantity -= updQty;
-            stocks.push({ stock: stk, quantity: updQty, ...price });
-            stockIds.push(stk._id);
+            units.push({ stock: stk, quantity: updQty });
+            unitIds.push(stk._id);
          }
       };
-      const { data: stock } = await this.getStockUnit({
-         barcode,
-         populate: { path: 'productVariant', populate: ['product'] },
-      });
-      if (stock.status !== EProductUnitStatus.Available)
-         throw new BadRequestException(stock.status);
-      updateQuantity(stock);
-      if (missingQuantity && nextBatchOnStockOut) {
-         const { data: eOStock } = await this.repository.findOne({ filter: { earlyOut: true } });
+      ({ data: stock } = barcode
+         ? await this.getStockUnit({
+              barcode,
+              populate: { path: 'productVariant', populate: ['product'] },
+           })
+         : undefined);
+      if (stock) updateQuantity(stock);
+      if ((missingQuantity && nextBatchOnStockOut) || variantId) {
+         const { data: eOStock } = await this.repository.findOne({
+            filter: {
+               earlyOut: true,
+               productVariant: variantId ?? stock.productVariant,
+            },
+         });
+         if (!stock) stock = eOStock;
          updateQuantity(eOStock);
       }
+      if (stock.status !== EProductUnitStatus.Available)
+         throw new BadRequestException(stock.status);
+      if (!isFoc) {
+         const tags = new Set([
+            ...(customer ? customer.tags.map((e: any) => e.toString()) : []),
+            ...stock.productVariant.tags.map((e: any) => e.toString()),
+         ]);
+         if (tags.size && stock.productVariant.product.priceVariants.length) {
+            for (const pV of stock.productVariant.product.priceVariants) {
+               if (!priceVariant || priceVariant.baseMultiplier < pV.baseMultiplier) {
+                  priceVariant = pV;
+                  if (pV.foc) break;
+               }
+            }
+         }
+      }
+
       if (missingQuantity) {
          let stkLeft = true;
          while (missingQuantity && stkLeft) {
             const stk = await this.repository.custom((model) =>
                model.aggregate([
-                  { $match: { _id: { $nin: stockIds } } },
+                  { $match: { _id: { $nin: unitIds } } },
                   {
                      $lookup: {
                         from: 'product',
@@ -121,6 +128,15 @@ export default class StockUnitService extends ACoreService<StockUnit> {
          throw new BadRequestException(
             `Required ${baseQuantity} ${baseUnit.name} and only ${baseQuantity - missingQuantity} ${baseUnit.name} left`,
          );
-      return { data: stocks };
+      const price = {
+         amount: isFoc ? 0 : stock.productVariant.basePrice.amount * baseQuantity,
+         unitId: stock.productVariant.basePrice.unitId,
+      };
+      if (priceVariant) {
+         if (priceVariant.foc)
+            price.amount -= priceVariant.focQuantity * stock.productVariant.basePrice.amount;
+         else price.amount *= priceVariant.baseMultiplier;
+      }
+      return { data: { units, variantId: stock.productVariant.id, price, priceVariant } };
    }
 }

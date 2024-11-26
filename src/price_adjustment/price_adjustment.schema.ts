@@ -25,15 +25,23 @@ class FocStock {
    @ValidateIf((o) => !o.amountPerTarget)
    @ValidateNested()
    @Type(() => Amount)
-   amount: Amount;
+   quantity: Amount;
 }
 
-class Adjustment {
-   //TODO: validate applyWholeSale === true
+export class Adjustment {
+   @AppProp({ type: Boolean })
+   isMarkup: boolean;
+
+   @IsBoolean()
+   applyWholeSale: boolean;
+
+   //TODO:focStocks' unit must be same with target's unit
+   @ValidateIf((o) => !o.applyWholeSale)
    @IsOptional()
    @IsMongoId({ each: true })
    focStocksWithTargetAmount?: string[]; //NOTE: buy 3 cup, foc 3 plate etc.
 
+   //TODO:focStocks' unit must be same with target's unit
    @IsOptional()
    @ValidateNested({ each: true })
    @Type(() => FocStock)

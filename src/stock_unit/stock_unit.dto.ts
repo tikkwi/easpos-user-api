@@ -1,7 +1,14 @@
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { FindByIdDto, FindDto } from '@common/dto/core.dto';
 import { ExchangeUnitDto } from '@shared/unit/unit.dto';
-import { IsBoolean, IsMongoId, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+   IsBoolean,
+   IsMongoId,
+   IsOptional,
+   IsString,
+   ValidateIf,
+   ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 
@@ -20,8 +27,13 @@ export class GetStockLeftDto extends IntersectionType(
 ) {}
 
 export class GetStockPurchasedDto {
+   @ValidateIf((o) => !o.variantId)
    @IsString()
-   barcode: string;
+   barcode?: string;
+
+   @ValidateIf((o) => !o.barcode)
+   @IsString()
+   variantId?: string;
 
    @ValidateNested()
    @Type(() => Amount)
@@ -33,4 +45,8 @@ export class GetStockPurchasedDto {
    @IsOptional()
    @IsMongoId()
    customerId?: string;
+
+   @IsOptional()
+   @IsBoolean()
+   isFoc?: boolean;
 }

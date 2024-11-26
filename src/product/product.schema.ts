@@ -1,4 +1,4 @@
-import { IsBoolean, IsMongoId, IsNumber, Max, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsMongoId, IsNumber, IsOptional, Max, Min, ValidateIf } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
@@ -19,15 +19,16 @@ export class PriceVariant {
    @IsBoolean() //NOTE:is stackable to promotion
    isStackable: boolean;
 
-   @ValidateIf((o) => !o.basePrice)
+   @IsOptional()
    @IsBoolean()
    foc?: boolean;
+
+   @ValidateIf((o) => o.foc)
+   @IsNumber()
+   focQuantity?: number;
 }
 
 export class BaseProduct extends BaseSchema {
-   @AppProp({ type: String, unique: true }) //NOTE: will only share this.. (qr code is also this)
-   refId: string; //NOTE: prod_uuid for product and var_uuid for variant
-
    @AppProp({ type: String })
    name: string;
 
@@ -36,9 +37,6 @@ export class BaseProduct extends BaseSchema {
 
    @AppProp({ type: [String], required: false })
    attachments?: string[];
-
-   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Category' }], default: [] })
-   tags?: AppSchema<Category>[];
 }
 
 /*
@@ -63,6 +61,9 @@ export default class Product extends BaseProduct {
 
    @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
    unitQuantity: Amount;
+
+   @AppProp({ type: [SchemaTypes.Mixed], default: [] }, { type: PriceVariant })
+   priceVariants: Array<PriceVariant>;
 
    /*
     * unitQuantity is how much unit include in a single stock unit

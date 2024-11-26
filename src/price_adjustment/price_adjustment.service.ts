@@ -1,20 +1,33 @@
 import ACoreService from '@common/core/core.service';
 import PriceAdjustment from './price_adjustment.schema';
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import Repository from '@common/core/repository';
-import { NewSaleDto, ProductPurchasedDto } from '../sale/sale.dto';
-import { GetBaseAdjustmentQueryDto, GetProductPriceDto } from './price_adjustment.dto';
+import {
+   GetApplicableProductAdjustmentDto,
+   GetBaseAdjustmentQueryDto,
+   GetFocProductsDto,
+   GetProductPriceDto,
+} from './price_adjustment.dto';
 import { EStatus } from '@common/utils/enum';
 import StockUnitService from '../stock_unit/stock_unit.service';
-import UnitService from '@shared/unit/unit.service';
 import { isWithinPeriod } from '@common/utils/datetime';
 import CustomerService from '../customer/customer.service';
 import { PromoCodeService } from '../promo_code/promo_code.service';
+import ProductService from '../product/product.service';
 import { ProductVariantService } from '../product_variant/product_variant.service';
+import { pick } from 'lodash';
+import { ProductCompactDto } from '../product/product.dto';
 
 export const getBaseAdjustmentQuery = (
-   { paymentMethodId, currencyId, baseAmount, tierLevel, variantId }: GetBaseAdjustmentQueryDto,
+   {
+      paymentMethodId,
+      currencyId,
+      quantity,
+      tierLevel,
+      variantId,
+      price,
+   }: GetBaseAdjustmentQueryDto,
    prefix = '',
 ) => {
    const k = (key: string) => `${prefix ? `${prefix}.` : ''}${key}`;
@@ -25,7 +38,8 @@ export const getBaseAdjustmentQuery = (
          $or: [{ $exists: false }, { $elemMatch: { $eq: paymentMethodId } }],
       },
       [k('currencyTrigger')]: { $or: [{ $exists: false }, { $elemMatch: { $eq: currencyId } }] },
-      [k('volumeTrigger')]: { $or: [{ $exists: false }, { $lte: baseAmount }] },
+      [k('spendTrigger.amount')]: { $or: [{ $exists: false }, { $elemMatch: { $eq: price } }] },
+      [k('volumeTrigger')]: { $or: [{ $exists: false }, { $lte: quantity }] },
       $or: [
          { [k('tierTrigger')]: { $exists: false } },
          { [k('tierTrigger.level')]: { $lte: tierLevel } },
@@ -36,46 +50,39 @@ export const getBaseAdjustmentQuery = (
 export default class PriceAdjustmentService extends ACoreService<PriceAdjustment> {
    constructor(
       @Inject(REPOSITORY) protected readonly repository: Repository<PriceAdjustment>,
-      private readonly productVariantService: ProductVariantService,
       private readonly stockUnitService: StockUnitService,
-      private readonly unitService: UnitService,
       private readonly customerService: CustomerService,
       private readonly promoCodeService: PromoCodeService,
+      private readonly productService: ProductService,
+      private readonly productVariantService: ProductVariantService,
    ) {
       super();
    }
 
-   async getProductBasePrice({ stockUnits, variantId }: ProductPurchasedDto) {
-      const b = [];
-      for (const { barcode } of stockUnits) {
-         const { data: stockUnit } = await this.stockUnitService.getStockUnit({
-            barcode,
-            variantId,
-            populate: ['productVariant'],
-         });
-      }
-   }
-
-   async getProductPrice({
+   async getApplicableProductAdjustment({
       promoCode,
-      variantId,
-      stockUnits,
+      barcode,
+      quantity,
+      nextBatchOnStockOut,
       customerId,
       ...dto
-   }: GetProductPriceDto) {
-      const { data: baseAmount } = await this.unitService.exchangeUnit({ current: [quantity] });
+   }: GetApplicableProductAdjustmentDto) {
       const { data: customer } = await this.customerService.getCustomer({ id: customerId });
-      const { data: productVariaxnt } = await this.productVariantService.findById({
-         id: variantId,
-         errorOnNotFound: true,
+      const {
+         data: { variantId, price, priceVariant },
+      } = await this.stockUnitService.getStockPurchased({
+         barcode,
+         quantity,
+         nextBatchOnStockOut,
+         customerId,
       });
-
-      // const basePrice = product.ba
+      if (!priceVariant.isStackable)
+         return { data: undefined, message: 'The un-stackable price variant is applied' };
       if (promoCode) {
          const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
             promoCode,
             variantId,
-            baseAmount,
+            price: price.amount,
             tierLevel: customer?.tier?.level,
             ...dto,
          });
@@ -88,7 +95,7 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
                ...getBaseAdjustmentQuery({
                   ...dto,
                   variantId,
-                  baseAmount,
+                  price: price.amount,
                   tierLevel: customer?.tier?.level,
                }),
             },
@@ -97,16 +104,88 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
       }
    }
 
-   async getApplicableSaleAdjustments({
-      promoCode,
-      currencyId,
-      paymentMethodId,
-      products,
-   }: NewSaleDto) {}
+   async getFocProducts({
+      applyWholeSale,
+      productId,
+      quantity,
+      focStocks,
+      focStocksWithTargetAmount,
+   }: GetFocProductsDto) {
+      const focProducts: Array<ProductCompactDto> = [];
+
+      const { data: tProduct } = await this.productService.findById({
+         id: productId,
+         lean: false,
+      });
+      const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
+
+      const { data: pVs } = await this.productVariantService.findByIds({
+         ids: pIds,
+         populate: 'product',
+         projection: { productVariant: 0 },
+      });
+
+      if (!applyWholeSale) {
+         for (const {
+            product: {
+               unitQuantity: { unitId },
+            },
+         } of pVs) {
+            if (unitId !== tProduct.unitQuantity.unitId)
+               throw new BadRequestException('FOC Stock unit differ from target stock');
+         }
+      }
+
+      for (let i = 0; i < pIds.length; i++) {
+         const {
+            data: { units },
+         } = await this.stockUnitService.getStockPurchased({
+            variantId: pIds[i],
+            nextBatchOnStockOut: true,
+            isFoc: true,
+            quantity: focStocksWithTargetAmount ? quantity : focStocks[i].quantity,
+         });
+         const baseInfo = ['name', 'description', 'attachments'];
+         focProducts.push({
+            ...(pick(pVs[i].product, baseInfo) as any),
+            variant: { ...(pick(pVs[i], baseInfo) as any), units },
+         });
+      }
+      return { data: focProducts };
+   }
+
+   async getProductPrice({
+      price,
+      productId,
+      quantity,
+      adjustment: {
+         focStocksWithTargetAmount,
+         focStocks,
+         absoluteAdjustment,
+         percentageAdjustment,
+         isMarkup,
+         applyWholeSale,
+      },
+   }: GetProductPriceDto) {
+      let focProducts: Array<ProductCompactDto> = [];
+      if (focStocks || focStocksWithTargetAmount)
+         ({ data: focProducts } = await this.getFocProducts({
+            productId,
+            quantity,
+            focStocks,
+            focStocksWithTargetAmount,
+            applyWholeSale,
+         }));
+      const adjustment = percentageAdjustment
+         ? price.amount * (percentageAdjustment / 100)
+         : absoluteAdjustment;
+      price.amount += adjustment * (isMarkup ? -1 : 1);
+      return { data: { price, focProducts } };
+   }
 
    async #filterProductAdjustments(adjustments: Array<PriceAdjustment>, id: string) {
       const f_adjustments: Array<PriceAdjustment> = [];
-      // const { data: stockLeft } = await this.stockUnitService.getStockLeft({ id });
+      const { data: stockLeft } = await this.stockUnitService.getStockLeft({ id });
       for (const adjustment of adjustments) {
          if (adjustment.stockLevelHigherTrigger && stockLeft > adjustment.stockLevelHigherTrigger)
             f_adjustments.push(adjustment);
