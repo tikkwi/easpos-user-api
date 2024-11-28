@@ -29,9 +29,6 @@ class FocStock {
 }
 
 export class Adjustment {
-   @AppProp({ type: Boolean })
-   isMarkup: boolean;
-
    @IsBoolean()
    applyWholeSale: boolean;
 

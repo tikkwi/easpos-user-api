@@ -10,6 +10,7 @@ import { EProductUnitStatus } from '@common/utils/enum';
 import CustomerService from '../customer/customer.service';
 import { PriceVariant } from '../product/product.schema';
 import { FindByIdDto } from '@common/dto/core.dto';
+import { Amount } from '@common/dto/entity.dto';
 
 @AppService()
 export default class StockUnitService extends ACoreService<StockUnit> {
@@ -45,25 +46,38 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       nextBatchOnStockOut,
       customerId,
       isFoc,
+      context,
    }: GetStockPurchasedDto) {
       const { data: baseUnit } = await this.unitService.getBase({ unitId: quantity.unitId });
       const { data: baseQuantity } = await this.unitService.exchangeUnit({ current: [quantity] });
       const { data: customer } = customerId
-         ? await this.customerService.getCustomer({ id: customerId })
+         ? await this.customerService.getCustomer({ id: customerId, context })
          : { data: undefined };
       let missingQuantity = baseQuantity;
       const units: Array<{
          stock: StockUnit;
-         quantity: number;
+         quantity: Amount;
       }> = [];
       let priceVariant: PriceVariant, stock: StockUnit;
       const unitIds: Array<ObjectId> = [];
-      const updateQuantity = (stk?: StockUnit) => {
+      const updateQuantity = async (stk?: StockUnit) => {
          if (!stk?.isOutOfStock) {
             const updQty =
                stk.stockLeft >= missingQuantity ? missingQuantity : missingQuantity - stk.stockLeft;
             missingQuantity -= updQty;
-            units.push({ stock: stk, quantity: updQty });
+
+            units.push({
+               stock: stk,
+               quantity: {
+                  amount: (
+                     await this.unitService.exchangeUnit({
+                        current: [{ amount: updQty }],
+                        targetId: quantity.unitId,
+                     })
+                  ).data,
+                  unitId: quantity.unitId,
+               },
+            });
             unitIds.push(stk._id);
          }
       };

@@ -4,10 +4,10 @@ import { BadRequestException, Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import Repository from '@common/core/repository';
 import {
-   GetApplicableProductAdjustmentDto,
+   GetAdjustedPriceDto,
+   GetApplicableAdjustmentDto,
    GetBaseAdjustmentQueryDto,
    GetFocProductsDto,
-   GetProductPriceDto,
 } from './price_adjustment.dto';
 import { EStatus } from '@common/utils/enum';
 import StockUnitService from '../stock_unit/stock_unit.service';
@@ -26,11 +26,13 @@ export const getBaseAdjustmentQuery = (
       quantity,
       tierLevel,
       variantId,
+      variants,
       price,
    }: GetBaseAdjustmentQueryDto,
    prefix = '',
 ) => {
    const k = (key: string) => `${prefix ? `${prefix}.` : ''}${key}`;
+
    return {
       [k('status')]: EStatus.Active,
       [k('appliedProducts')]: variantId ? { $elemMatch: { $eq: variantId } } : undefined,
@@ -38,12 +40,63 @@ export const getBaseAdjustmentQuery = (
          $or: [{ $exists: false }, { $elemMatch: { $eq: paymentMethodId } }],
       },
       [k('currencyTrigger')]: { $or: [{ $exists: false }, { $elemMatch: { $eq: currencyId } }] },
-      [k('spendTrigger.amount')]: { $or: [{ $exists: false }, { $elemMatch: { $eq: price } }] },
+      [k('spendTrigger')]: {
+         $or: [
+            { $exists: false },
+            {
+               $and: [
+                  {
+                     'spendTrigger.unitId': price.unitId,
+                     'spendTrigger.amount': { $lte: price.amount },
+                  },
+               ],
+            },
+         ],
+      },
       [k('volumeTrigger')]: { $or: [{ $exists: false }, { $lte: quantity }] },
-      $or: [
-         { [k('tierTrigger')]: { $exists: false } },
-         { [k('tierTrigger.level')]: { $lte: tierLevel } },
-      ],
+      [k('bundleTrigger')]: {
+         $or: [
+            { $exists: false },
+            {
+               $expr: {
+                  $allElementsTrue: {
+                     $map: {
+                        input: '$bundleTrigger',
+                        as: 'doc',
+                        in: {
+                           $and: [
+                              {
+                                 $in: ['$$doc.id', variants.map(({ id }) => id)],
+                              },
+                              {
+                                 $gte: [
+                                    {
+                                       $arrayElemAt: [
+                                          {
+                                             $filter: {
+                                                input: variants,
+                                                as: 'qry',
+                                                cond: {
+                                                   $eq: ['$$qry.id', '$$doc.id'],
+                                                },
+                                             },
+                                          },
+                                          0,
+                                       ],
+                                       //@ts-ignore
+                                    }.quantity,
+                                    '$$doc.quantity',
+                                 ],
+                              },
+                           ],
+                        },
+                     },
+                  },
+               },
+            },
+         ],
+      },
+      [k('tierTrigger.level')]: { $or: [{ $exists: false }, { $lte: tierLevel }] },
    };
 };
 
@@ -57,130 +110,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
       private readonly productVariantService: ProductVariantService,
    ) {
       super();
-   }
-
-   async getApplicableProductAdjustment({
-      promoCode,
-      barcode,
-      quantity,
-      nextBatchOnStockOut,
-      customerId,
-      ...dto
-   }: GetApplicableProductAdjustmentDto) {
-      const { data: customer } = await this.customerService.getCustomer({ id: customerId });
-      const {
-         data: { variantId, price, priceVariant },
-      } = await this.stockUnitService.getStockPurchased({
-         barcode,
-         quantity,
-         nextBatchOnStockOut,
-         customerId,
-      });
-      if (!priceVariant.isStackable)
-         return { data: undefined, message: 'The un-stackable price variant is applied' };
-      if (promoCode) {
-         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
-            promoCode,
-            variantId,
-            price: price.amount,
-            tierLevel: customer?.tier?.level,
-            ...dto,
-         });
-         if (pC?.promotion) return await this.#filterProductAdjustments([pC.promotion], variantId);
-         return { data: undefined, message: 'Promo code is not eligible' };
-      } else {
-         const { data: adjustments } = await this.repository.find({
-            filter: {
-               autoTrigger: true,
-               ...getBaseAdjustmentQuery({
-                  ...dto,
-                  variantId,
-                  price: price.amount,
-                  tierLevel: customer?.tier?.level,
-               }),
-            },
-         });
-         return { data: await this.#filterProductAdjustments(adjustments, variantId) };
-      }
-   }
-
-   async getFocProducts({
-      applyWholeSale,
-      productId,
-      quantity,
-      focStocks,
-      focStocksWithTargetAmount,
-   }: GetFocProductsDto) {
-      const focProducts: Array<ProductCompactDto> = [];
-
-      const { data: tProduct } = await this.productService.findById({
-         id: productId,
-         lean: false,
-      });
-      const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
-
-      const { data: pVs } = await this.productVariantService.findByIds({
-         ids: pIds,
-         populate: 'product',
-         projection: { productVariant: 0 },
-      });
-
-      if (!applyWholeSale) {
-         for (const {
-            product: {
-               unitQuantity: { unitId },
-            },
-         } of pVs) {
-            if (unitId !== tProduct.unitQuantity.unitId)
-               throw new BadRequestException('FOC Stock unit differ from target stock');
-         }
-      }
-
-      for (let i = 0; i < pIds.length; i++) {
-         const {
-            data: { units },
-         } = await this.stockUnitService.getStockPurchased({
-            variantId: pIds[i],
-            nextBatchOnStockOut: true,
-            isFoc: true,
-            quantity: focStocksWithTargetAmount ? quantity : focStocks[i].quantity,
-         });
-         const baseInfo = ['name', 'description', 'attachments'];
-         focProducts.push({
-            ...(pick(pVs[i].product, baseInfo) as any),
-            variant: { ...(pick(pVs[i], baseInfo) as any), units },
-         });
-      }
-      return { data: focProducts };
-   }
-
-   async getProductPrice({
-      price,
-      productId,
-      quantity,
-      adjustment: {
-         focStocksWithTargetAmount,
-         focStocks,
-         absoluteAdjustment,
-         percentageAdjustment,
-         isMarkup,
-         applyWholeSale,
-      },
-   }: GetProductPriceDto) {
-      let focProducts: Array<ProductCompactDto> = [];
-      if (focStocks || focStocksWithTargetAmount)
-         ({ data: focProducts } = await this.getFocProducts({
-            productId,
-            quantity,
-            focStocks,
-            focStocksWithTargetAmount,
-            applyWholeSale,
-         }));
-      const adjustment = percentageAdjustment
-         ? price.amount * (percentageAdjustment / 100)
-         : absoluteAdjustment;
-      price.amount += adjustment * (isMarkup ? -1 : 1);
-      return { data: { price, focProducts } };
    }
 
    async #filterProductAdjustments(adjustments: Array<PriceAdjustment>, id: string) {
@@ -201,5 +130,154 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
             f_adjustments.push(adjustment);
       }
       return f_adjustments;
+   }
+
+   async getApplicableAdjustments({
+      promoCode,
+      context,
+      customerId,
+      product,
+      sale,
+      ...dto
+   }: GetApplicableAdjustmentDto) {
+      const { data: customer } = await this.customerService.getCustomer({
+         id: customerId,
+         context,
+      });
+      if (sale) {
+         for (const { appliedUnstackableAdjustment } of sale.products) {
+            if (appliedUnstackableAdjustment)
+               return {
+                  data: undefined,
+                  message: 'The un-stackable product adjustment is applied',
+               };
+         }
+      }
+
+      let variantId,
+         priceVariant,
+         price = sale?.price;
+      if (product)
+         ({
+            data: { variantId, price, priceVariant },
+         } = await this.stockUnitService.getStockPurchased({
+            ...product,
+            customerId,
+            context,
+         }));
+      if (priceVariant?.isStackable === false)
+         return { data: undefined, message: 'The un-stackable price variant is applied' };
+      if (promoCode) {
+         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
+            promoCode,
+            variantId,
+            price,
+            tierLevel: customer?.tier?.level,
+            variants: sale?.products.map(({ id, quantity }) => ({
+               id,
+               quantity,
+            })),
+            ...dto,
+         });
+         if (pC?.promotion) return await this.#filterProductAdjustments([pC.promotion], variantId);
+         return { data: undefined, message: 'Promo code is not eligible' };
+      } else {
+         const { data: adjustments } = await this.repository.find({
+            filter: {
+               autoTrigger: true,
+               ...getBaseAdjustmentQuery({
+                  ...dto,
+                  variantId,
+                  price: price,
+                  tierLevel: customer?.tier?.level,
+               }),
+            },
+         });
+         return { data: await this.#filterProductAdjustments(adjustments, variantId) };
+      }
+   }
+
+   //NOTE: protect to directly call not to trick sth like price
+   async nc_getAdjustedPrice({
+      price,
+      productId,
+      quantity,
+      isMarkup,
+      adjustment: {
+         focStocksWithTargetAmount,
+         focStocks,
+         absoluteAdjustment,
+         percentageAdjustment,
+      },
+      context,
+   }: GetAdjustedPriceDto) {
+      let focProducts: Array<ProductCompactDto> = [];
+      if (focStocks || focStocksWithTargetAmount) {
+         if (focStocksWithTargetAmount && !productId)
+            throw new BadRequestException('ProductId is required');
+         ({ data: focProducts } = await this.getFocProducts({
+            productId,
+            quantity,
+            focStocks,
+            focStocksWithTargetAmount,
+            context,
+         }));
+      }
+      const adjustment = percentageAdjustment
+         ? price.amount * (percentageAdjustment / 100)
+         : absoluteAdjustment;
+      price.amount += adjustment * (isMarkup ? -1 : 1);
+      return { data: { price, focProducts } };
+   }
+
+   async getFocProducts({
+      productId,
+      quantity,
+      focStocks,
+      focStocksWithTargetAmount,
+      context,
+   }: GetFocProductsDto) {
+      const focProducts: Array<ProductCompactDto & { usedAdjustment: boolean }> = [];
+      const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
+
+      const { data: pVs } = await this.productVariantService.findByIds({
+         ids: pIds,
+         populate: 'product',
+         projection: { productVariant: 0 },
+      });
+
+      if (focStocksWithTargetAmount) {
+         const { data: tProduct } = await this.productService.findById({
+            id: productId,
+            lean: false,
+         });
+         for (const {
+            product: {
+               unitQuantity: { unitId },
+            },
+         } of pVs) {
+            if (unitId !== tProduct.unitQuantity.unitId)
+               throw new BadRequestException('FOC Stock unit differ from target stock');
+         }
+      }
+
+      for (let i = 0; i < pIds.length; i++) {
+         const {
+            data: { units },
+         } = await this.stockUnitService.getStockPurchased({
+            variantId: pIds[i],
+            nextBatchOnStockOut: true,
+            isFoc: true,
+            quantity: focStocksWithTargetAmount ? quantity : focStocks[i].quantity,
+            context,
+         });
+         const baseInfo = ['name', 'description', 'attachments'];
+         focProducts.push({
+            ...(pick(pVs[i].product, baseInfo) as any),
+            variant: { ...(pick(pVs[i], baseInfo) as any), units },
+            usedAdjustment: true,
+         });
+      }
+      return { data: focProducts };
    }
 }

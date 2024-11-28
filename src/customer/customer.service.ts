@@ -13,8 +13,6 @@ import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import MerchantAllowanceService from '../allowance/allowance.service';
 import { EUser } from '@common/utils/enum';
 import AddressService from '@shared/address/address.service';
-import AppResourceService from '@common/core/app_resource.service';
-import ContextService from '@common/core/context/context.service';
 
 @AppService()
 export default class CustomerService extends AUserService<Customer> {
@@ -47,8 +45,8 @@ export default class CustomerService extends AUserService<Customer> {
    //NOTE: This will prioritized auth user(if it customer). If need customer with id, use findById
    async getCustomer({
       id,
+      context,
    }: GetCustomerDto): Promise<{ data: Customer | undefined; message: string | undefined }> {
-      const context = await AppResourceService.getRef().resolve(ContextService);
       const authUser = context.get('user');
       const isCustomerLoggedIn = authUser.type === EUser.Customer;
       if (!isCustomerLoggedIn && !id) return { data: undefined, message: 'Customer not logged in' };

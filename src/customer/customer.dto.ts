@@ -21,7 +21,7 @@ export class CreateCustomerDto extends IntersectionType(
    PickType(Customer, ['guest']),
 ) {}
 
-export class GetCustomerDto {
+export class GetCustomerDto extends BaseDto {
    @IsOptional()
    @IsMongoId()
    id?: string | ObjectId;

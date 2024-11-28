@@ -4,7 +4,7 @@ import { OmitType } from '@nestjs/swagger';
 import Product from './product.schema';
 import { CategoryDto } from '@common/dto/action.dto';
 import { Type } from 'class-transformer';
-import { BasicInfo } from '@common/dto/entity.dto';
+import { Amount, BasicInfo } from '@common/dto/entity.dto';
 import StockUnit from '../stock_unit/stock_unit.schema';
 
 export class CreateProductDto extends OmitType(CoreDto(Product), ['category']) {
@@ -22,19 +22,19 @@ export class CreateProductDto extends OmitType(CoreDto(Product), ['category']) {
    unitId: string;
 }
 
-class StockUnitDto {
+export class StockUnitFullDto {
    @ValidateNested()
    @Type(() => StockUnit)
    stock: StockUnit;
 
    @IsNumber()
-   quantity: number;
+   quantity: Amount;
 }
 
 class ProductVariantCompactDto extends BasicInfo {
    @ValidateNested({ each: true })
-   @Type(() => Array<StockUnitDto>)
-   units: Array<StockUnitDto>;
+   @Type(() => Array<StockUnitFullDto>)
+   units: Array<StockUnitFullDto>;
 }
 
 export class ProductCompactDto extends BasicInfo {
