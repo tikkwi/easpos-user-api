@@ -112,26 +112,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
       super();
    }
 
-   async #filterProductAdjustments(adjustments: Array<PriceAdjustment>, id: string) {
-      const f_adjustments: Array<PriceAdjustment> = [];
-      const { data: stockLeft } = await this.stockUnitService.getStockLeft({ id });
-      for (const adjustment of adjustments) {
-         if (adjustment.stockLevelHigherTrigger && stockLeft > adjustment.stockLevelHigherTrigger)
-            f_adjustments.push(adjustment);
-         else if (
-            adjustment.stockLevelLowerTrigger &&
-            stockLeft < adjustment.stockLevelLowerTrigger
-         )
-            f_adjustments.push(adjustment);
-         else if (
-            adjustment.timeTrigger &&
-            isWithinPeriod(adjustment.timeTrigger.from, adjustment.timeTrigger.to)
-         )
-            f_adjustments.push(adjustment);
-      }
-      return f_adjustments;
-   }
-
    async getApplicableAdjustments({
       promoCode,
       context,
@@ -155,17 +135,17 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
       }
 
       let variantId,
-         priceVariant,
+         appliedUnstackableVariant,
          price = sale?.price;
       if (product)
          ({
-            data: { variantId, price, priceVariant },
+            data: { variantId, price, appliedUnstackableVariant },
          } = await this.stockUnitService.getStockPurchased({
             ...product,
             customerId,
             context,
          }));
-      if (priceVariant?.isStackable === false)
+      if (appliedUnstackableVariant)
          return { data: undefined, message: 'The un-stackable price variant is applied' };
       if (promoCode) {
          const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
@@ -279,5 +259,25 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
          });
       }
       return { data: focProducts };
+   }
+
+   async #filterProductAdjustments(adjustments: Array<PriceAdjustment>, id: string) {
+      const f_adjustments: Array<PriceAdjustment> = [];
+      const { data: stockLeft } = await this.stockUnitService.getStockLeft({ id });
+      for (const adjustment of adjustments) {
+         if (adjustment.stockLevelHigherTrigger && stockLeft > adjustment.stockLevelHigherTrigger)
+            f_adjustments.push(adjustment);
+         else if (
+            adjustment.stockLevelLowerTrigger &&
+            stockLeft < adjustment.stockLevelLowerTrigger
+         )
+            f_adjustments.push(adjustment);
+         else if (
+            adjustment.timeTrigger &&
+            isWithinPeriod(adjustment.timeTrigger.from, adjustment.timeTrigger.to)
+         )
+            f_adjustments.push(adjustment);
+      }
+      return f_adjustments;
    }
 }

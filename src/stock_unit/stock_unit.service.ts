@@ -12,6 +12,14 @@ import { PriceVariant } from '../product/product.schema';
 import { FindByIdDto } from '@common/dto/core.dto';
 import { Amount } from '@common/dto/entity.dto';
 
+type PurchasedStockUnit = {
+   stock: AppSchema<StockUnit>;
+   quantity: Amount;
+   price: Amount;
+   focQuantity?: Amount;
+   priceVariant?: PriceVariant;
+};
+
 @AppService()
 export default class StockUnitService extends ACoreService<StockUnit> {
    constructor(
@@ -54,19 +62,17 @@ export default class StockUnitService extends ACoreService<StockUnit> {
          ? await this.customerService.getCustomer({ id: customerId, context })
          : { data: undefined };
       let missingQuantity = baseQuantity;
-      const units: Array<{
-         stock: StockUnit;
-         quantity: Amount;
-      }> = [];
-      let priceVariant: PriceVariant, stock: StockUnit;
-      const unitIds: Array<ObjectId> = [];
-      const updateQuantity = async (stk?: StockUnit) => {
+      const units: Array<PurchasedStockUnit> = [];
+      let stock: StockUnit;
+      const unitIds: Array<ObjectId | string> = [];
+      const price = { amount: 0, unitId: stock.productVariant.basePrice.unitId };
+      let appliedUnstackableVariant = false;
+      const updateQuantity = async (stk?: AppSchema<StockUnit>) => {
          if (!stk?.isOutOfStock) {
             const updQty =
                stk.stockLeft >= missingQuantity ? missingQuantity : missingQuantity - stk.stockLeft;
             missingQuantity -= updQty;
-
-            units.push({
+            const unt: PurchasedStockUnit = {
                stock: stk,
                quantity: {
                   amount: (
@@ -77,8 +83,42 @@ export default class StockUnitService extends ACoreService<StockUnit> {
                   ).data,
                   unitId: quantity.unitId,
                },
-            });
-            unitIds.push(stk._id);
+               price: { amount: 0, unitId: stock.productVariant.basePrice.unitId },
+            };
+            if (!isFoc) {
+               let priceVariant: PriceVariant;
+               const tags = new Set([
+                  ...(customer ? customer.tags.map((e: any) => e.toString()) : []),
+                  ...stock.tags.map((e: any) => e.toString()),
+                  ...stock.productVariant.tags.map((e: any) => e.toString()),
+                  ...stock.productVariant.product.tags.map((e: any) => e.toString()),
+               ]);
+               if (tags.size && stock.productVariant.product.priceVariants.length) {
+                  for (const pV of stock.productVariant.product.priceVariants) {
+                     if (!priceVariant || priceVariant.baseMultiplier < pV.baseMultiplier) {
+                        priceVariant = pV;
+                        if (pV.foc) break;
+                     }
+                  }
+               }
+               unt.price = {
+                  amount: stock.productVariant.basePrice.amount * updQty,
+                  unitId: stock.productVariant.basePrice.unitId,
+               };
+               if (priceVariant) {
+                  unt.priceVariant = priceVariant;
+                  if (priceVariant.foc) {
+                     unt.price.amount -=
+                        priceVariant.focQuantity * stock.productVariant.basePrice.amount;
+                     unt.focQuantity = { amount: priceVariant.focQuantity, unitId: baseUnit.id };
+                  } else unt.price.amount *= priceVariant.baseMultiplier;
+               }
+            }
+            price.amount += unt.price.amount;
+            units.push(unt);
+            unitIds.push(stk.id);
+            if (!appliedUnstackableVariant)
+               appliedUnstackableVariant = unt.priceVariant?.isStackable;
          }
       };
       ({ data: stock } = barcode
@@ -87,7 +127,7 @@ export default class StockUnitService extends ACoreService<StockUnit> {
               populate: { path: 'productVariant', populate: ['product'] },
            })
          : undefined);
-      if (stock) updateQuantity(stock);
+      if (stock) await updateQuantity(stock);
       if ((missingQuantity && nextBatchOnStockOut) || variantId) {
          const { data: eOStock } = await this.repository.findOne({
             filter: {
@@ -96,24 +136,10 @@ export default class StockUnitService extends ACoreService<StockUnit> {
             },
          });
          if (!stock) stock = eOStock;
-         updateQuantity(eOStock);
+         await updateQuantity(eOStock);
       }
       if (stock.status !== EProductUnitStatus.Available)
          throw new BadRequestException(stock.status);
-      if (!isFoc) {
-         const tags = new Set([
-            ...(customer ? customer.tags.map((e: any) => e.toString()) : []),
-            ...stock.productVariant.tags.map((e: any) => e.toString()),
-         ]);
-         if (tags.size && stock.productVariant.product.priceVariants.length) {
-            for (const pV of stock.productVariant.product.priceVariants) {
-               if (!priceVariant || priceVariant.baseMultiplier < pV.baseMultiplier) {
-                  priceVariant = pV;
-                  if (pV.foc) break;
-               }
-            }
-         }
-      }
 
       if (missingQuantity) {
          let stkLeft = true;
@@ -134,7 +160,7 @@ export default class StockUnitService extends ACoreService<StockUnit> {
                   { $limit: 1 },
                ]),
             );
-            if (stk.length) updateQuantity(stk[0]);
+            if (stk.length) await updateQuantity(stk[0]);
             else stkLeft = false;
          }
       }
@@ -142,15 +168,8 @@ export default class StockUnitService extends ACoreService<StockUnit> {
          throw new BadRequestException(
             `Required ${baseQuantity} ${baseUnit.name} and only ${baseQuantity - missingQuantity} ${baseUnit.name} left`,
          );
-      const price = {
-         amount: isFoc ? 0 : stock.productVariant.basePrice.amount * baseQuantity,
-         unitId: stock.productVariant.basePrice.unitId,
+      return {
+         data: { units, variantId: stock.productVariant.id, price, appliedUnstackableVariant },
       };
-      if (priceVariant) {
-         if (priceVariant.foc)
-            price.amount -= priceVariant.focQuantity * stock.productVariant.basePrice.amount;
-         else price.amount *= priceVariant.baseMultiplier;
-      }
-      return { data: { units, variantId: stock.productVariant.id, price, priceVariant } };
    }
 }

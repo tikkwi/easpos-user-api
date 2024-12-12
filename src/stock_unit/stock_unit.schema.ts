@@ -10,7 +10,8 @@ import Ingredient from '../ingredient/ingredient.schema';
 import StockLocation from '../stock_location/stock_location.schema';
 import Section from '../section/section.schema';
 import Shelf from '../shelf/shelf.schema';
-import { OmitType } from '@nestjs/swagger';
+import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
+import { BaseProduct } from '../product/product.schema';
 
 /*
  * NOTE: stock_unit is not only the single unit of product_variant.
@@ -18,7 +19,10 @@ import { OmitType } from '@nestjs/swagger';
  * and enter quantity rather than manual scanning every single units.
  * */
 @Schema()
-export default class StockUnit extends OmitType(BaseSchema, ['createdAt']) {
+export default class StockUnit extends IntersectionType(
+   OmitType(BaseSchema, ['createdAt']),
+   PickType(BaseProduct, ['tags']),
+) {
    @AppProp({ type: Date, default: Date.now, index: true })
    createdAt: Date;
 

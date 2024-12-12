@@ -5,7 +5,8 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
 import { EProduct, EProductStatus } from '@common/utils/enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Amount, Field } from '@common/dto/entity.dto';
+import { Amount } from '@common/dto/entity.dto';
+import Field from '../field/field.schema';
 
 export class PriceVariant {
    @IsMongoId() //NOTE:tag category
@@ -37,6 +38,9 @@ export class BaseProduct extends BaseSchema {
 
    @AppProp({ type: [String], required: false })
    attachments?: string[];
+
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Category' }], default: [] })
+   tags?: Array<AppSchema<Category>>;
 }
 
 /*
@@ -81,8 +85,8 @@ export default class Product extends BaseProduct {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
    subType: AppSchema<Category>;
 
-   @AppProp({ type: [SchemaTypes.Mixed], required: false }, { type: Field })
-   meta?: Field[];
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Field' }], required: false })
+   meta?: Array<AppSchema<Field>>;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

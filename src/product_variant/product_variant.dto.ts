@@ -1,19 +1,14 @@
-import { IsBoolean, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { OmitType } from '@nestjs/swagger';
+import { ProductVariant } from './product_variant.schema';
+import { IsMongoId, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Amount } from '@common/dto/entity.dto';
+import { CategoryDto } from '@shared/category/category.dto';
 
-export class ProductVariantDto {
-   @IsString()
-   @IsNotEmpty()
-   variantId: string;
+export class CreateProductVariantDto extends OmitType(ProductVariant, ['product', 'tags']) {
+   @IsMongoId()
+   productId: string;
 
    @ValidateNested()
-   @Type(() => Amount)
-   quantity: Amount;
-
-   @IsBoolean()
-   usedAdjustment: boolean;
-
-   @IsBoolean()
-   adjustmentStackable: boolean;
+   @Type(() => CategoryDto)
+   tags: Array<CategoryDto>;
 }

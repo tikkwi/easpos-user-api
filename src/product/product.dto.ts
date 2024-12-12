@@ -2,10 +2,10 @@ import { IsMongoId, IsNumber, IsOptional, ValidateNested } from 'class-validator
 import { CoreDto } from '@common/dto/core.dto';
 import { OmitType } from '@nestjs/swagger';
 import Product from './product.schema';
-import { CategoryDto } from '@common/dto/action.dto';
 import { Type } from 'class-transformer';
 import { Amount, BasicInfo } from '@common/dto/entity.dto';
 import StockUnit from '../stock_unit/stock_unit.schema';
+import { CategoryDto } from '@shared/category/category.dto';
 
 export class CreateProductDto extends OmitType(CoreDto(Product), ['category']) {
    @IsOptional()
