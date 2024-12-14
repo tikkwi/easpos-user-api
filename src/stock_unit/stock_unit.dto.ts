@@ -11,6 +11,30 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
+import StockUnit from './stock_unit.schema';
+
+export class CreateStockUnitDto extends OmitType(StockUnit, [
+   'productVariant',
+   'batch',
+   'stockLocation',
+   'section',
+   'shelf',
+]) {
+   @IsMongoId()
+   variantId: string;
+
+   @IsMongoId()
+   batchId: string;
+
+   @IsMongoId()
+   locationId: string;
+
+   @IsMongoId()
+   sectionId: string;
+
+   @IsMongoId()
+   shelfId: string;
+}
 
 export class GetStockUnitDto extends OmitType(FindDto, ['errorOnNotFound']) {
    @IsString()

@@ -11,7 +11,7 @@ import { GetUserDto } from '@shared/user/user.dto';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 
 @AppService()
-export default class PartnerService extends AUserService {
+export default class PartnerService extends AUserService<Partner> {
    constructor(
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,

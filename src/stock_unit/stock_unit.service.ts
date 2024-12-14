@@ -5,12 +5,14 @@ import { BadRequestException, Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import Repository from '@common/core/repository';
 import UnitService from '@shared/unit/unit.service';
-import { GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
+import { CreateStockUnitDto, GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
 import { EProductUnitStatus } from '@common/utils/enum';
 import CustomerService from '../customer/customer.service';
 import { PriceVariant } from '../product/product.schema';
 import { FindByIdDto } from '@common/dto/core.dto';
 import { Amount } from '@common/dto/entity.dto';
+import { ProductVariantService } from '../product_variant/product_variant.service';
+import ProductService from '../product/product.service';
 
 type PurchasedStockUnit = {
    stock: AppSchema<StockUnit>;
@@ -26,9 +28,24 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       @Inject(REPOSITORY) protected readonly repository: Repository<StockUnit>,
       private readonly unitService: UnitService,
       private readonly customerService: CustomerService,
+      private readonly variantService: ProductVariantService,
+      private readonly productService: ProductService,
+      private readonly procurementService: ProductService,
+      private readonly locationService: ProductService,
+      private readonly sectionService: ProductService,
+      private readonly shelfService: ProductService,
    ) {
       super();
    }
+
+   async create({
+      variantId,
+      batchId,
+      locationId,
+      sectionId,
+      shelfId,
+      ...dto
+   }: CreateStockUnitDto) {}
 
    async getStockLeft({ id }: Pick<FindByIdDto, 'id'>) {
       let sL = 0;
@@ -95,7 +112,10 @@ export default class StockUnitService extends ACoreService<StockUnit> {
                ]);
                if (tags.size && stock.productVariant.product.priceVariants.length) {
                   for (const pV of stock.productVariant.product.priceVariants) {
-                     if (!priceVariant || priceVariant.baseMultiplier < pV.baseMultiplier) {
+                     if (
+                        tags.has(pV.id) &&
+                        (!priceVariant || priceVariant.baseMultiplier < pV.baseMultiplier)
+                     ) {
                         priceVariant = pV;
                         if (pV.foc) break;
                      }

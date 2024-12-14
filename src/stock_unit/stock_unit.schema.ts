@@ -5,8 +5,6 @@ import { EProductUnitStatus } from '@common/utils/enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProductVariant } from '../product_variant/product_variant.schema';
 import Procurement from '../procurement/procurement.schema';
-import { ValidateIf } from 'class-validator';
-import Ingredient from '../ingredient/ingredient.schema';
 import StockLocation from '../stock_location/stock_location.schema';
 import Section from '../section/section.schema';
 import Shelf from '../shelf/shelf.schema';
@@ -63,13 +61,8 @@ export default class StockUnit extends IntersectionType(
    @AppProp({ type: SchemaTypes.Mixed }) //NOTE: manual validation
    metaValue?: any;
 
-   @ValidateIf((o) => !o.isIngredient)
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'ProductVariant' })
-   productVariant?: AppSchema<ProductVariant>;
-
-   @ValidateIf((o) => o.isIngredient)
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Ingredient' })
-   ingredient?: Ingredient;
+   productVariant: AppSchema<ProductVariant>;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Procurement' })
    batch: Procurement;

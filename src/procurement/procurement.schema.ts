@@ -3,45 +3,36 @@ import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import Partner from '../partner/partner.schema';
-import {
-   IsBoolean,
-   IsEnum,
-   IsMongoId,
-   IsNumber,
-   IsOptional,
-   ValidateNested,
-} from 'class-validator';
+import { IsEnum, IsMongoId, IsNumber, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Amount } from '@common/dto/entity.dto';
+import { Amount, FieldValue } from '@common/dto/entity.dto';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import StockUnit from '../stock_unit/stock_unit.schema';
 import { EInspectionStatus, EProcurementStatus } from '@common/utils/enum';
 import Expense from '../expense/expense.schema';
-import Category from '@shared/category/category.schema';
+import Product from '../product/product.schema';
 
-class StockPurchased extends PickType(StockUnit, [
-   'qrCode',
-   'unitQuantity',
-   'model',
-   'serial',
-   'metaValue',
-]) {
-   @IsOptional() //NOTE: can null if new stock
+export class SupplierStock extends PickType(Product, ['unit', 'unitQuantity']) {
+   @ValidateIf((o) => !o.metaValue) //NOTE: can null if new stock
    @IsMongoId()
-   stockId?: string;
+   stockVariantId?: string;
 
    @ValidateNested()
    @Type(() => Amount)
    pricePerUnit: Amount;
 
-   @IsEnum(EInspectionStatus)
-   inspectionStatus: EInspectionStatus;
+   @IsMongoId() //NOTE: category (SupplierStock)
+   type: string;
+
+   @ValidateIf((o) => !o.stockId) //NOTE: can null if new stock
+   @ValidateNested({ each: true })
+   @Type(() => FieldValue)
+   metaValue?: Array<FieldValue>;
 }
 
-class StockBatch {
+export class SupplierStockBatch {
    @ValidateNested()
-   @Type(() => StockPurchased)
-   stock: StockPurchased;
+   @Type(() => SupplierStock)
+   stock: SupplierStock;
 
    @IsNumber()
    totalUnit: number;
@@ -50,8 +41,8 @@ class StockBatch {
    @Type(() => Amount)
    totalPrice: Amount;
 
-   @IsBoolean()
-   inspectionCompleted: boolean;
+   @IsEnum(EInspectionStatus)
+   inspectionStatus: EInspectionStatus;
 
    @AppProp({ type: String, required: false })
    remark?: string;
@@ -60,25 +51,22 @@ class StockBatch {
 @Schema()
 export default class Procurement extends IntersectionType(
    BaseSchema,
-   OmitType(StockBatch, ['stock', 'totalUnit']),
+   OmitType(SupplierStockBatch, ['stock', 'totalUnit']),
 ) {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Partner' })
    supplier: Partner;
 
-   @AppProp({ type: [SchemaTypes.Mixed] }, { type: StockBatch })
-   batches: StockBatch[];
+   @AppProp({ type: [SchemaTypes.Mixed] }, { type: SupplierStockBatch })
+   batches: Array<SupplierStockBatch>;
 
-   @AppProp({ type: String, enum: EProcurementStatus })
-   status: EProcurementStatus;
+   @AppProp({ type: String, enum: EProcurementStatus, default: EProcurementStatus.Pending })
+   status?: EProcurementStatus;
 
    @AppProp({ type: Date })
    receivedDate: Date;
 
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
-   category: Category;
-
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Expense' }] })
-   expenses: Expense[];
+   expenses: Array<Expense>;
 }
 
 export const ProcurementSchema = SchemaFactory.createForClass(Procurement);

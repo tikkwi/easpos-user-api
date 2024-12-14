@@ -79,6 +79,10 @@ export default class MerchantConfig extends BaseSchema {
       { type: AdjustmentPriority },
    )
    adjustmentPriority: AdjustmentPriority;
+
+   //NOTE: key-> category(SupplierStock), value-> field array
+   @AppProp({ type: SchemaTypes.Mixed, required: false })
+   defaultSupplierStockMeta: Record<string, Array<string>>;
 }
 
 export const MerchantConfigSchema = SchemaFactory.createForClass(MerchantConfig);

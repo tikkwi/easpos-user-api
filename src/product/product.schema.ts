@@ -5,8 +5,7 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
 import { EProduct, EProductStatus } from '@common/utils/enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Amount } from '@common/dto/entity.dto';
-import Field from '../field/field.schema';
+import Unit from '@shared/unit/unit.schema';
 
 export class PriceVariant {
    @IsMongoId() //NOTE:tag category
@@ -29,6 +28,14 @@ export class PriceVariant {
    focQuantity?: number;
 }
 
+export class Ingredient {
+   @IsMongoId()
+   productId: string;
+
+   @IsNumber()
+   blendAmount: number;
+}
+
 export class BaseProduct extends BaseSchema {
    @AppProp({ type: String })
    name: string;
@@ -43,19 +50,16 @@ export class BaseProduct extends BaseSchema {
    tags?: Array<AppSchema<Category>>;
 }
 
-/*
- * TODO: updating tags in product will apply to all (variant, stock_unit).
- *  updating tags in variant will apply to every associated stock_unit
- * NOTE: everywhere refer to product mean product variant: not barefoot product
- * */
-
 @Schema()
 export default class Product extends BaseProduct {
    @AppProp({ type: String, enum: EProduct })
    type: EProduct;
 
    @AppProp({ type: Boolean })
-   inHouse: boolean;
+   isInHouse: boolean;
+
+   @AppProp({ type: Boolean })
+   isIngredient: boolean;
 
    @AppProp({ type: [String], enum: EProductStatus })
    statuses: EProductStatus[];
@@ -63,11 +67,11 @@ export default class Product extends BaseProduct {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
    category: AppSchema<Category>;
 
-   @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
-   unitQuantity: Amount;
+   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Unit' })
+   unit: AppSchema<Unit>;
 
-   @AppProp({ type: [SchemaTypes.Mixed], default: [] }, { type: PriceVariant })
-   priceVariants: Array<PriceVariant>;
+   @AppProp({ type: Number })
+   unitQuantity: number;
 
    /*
     * unitQuantity is how much unit include in a single stock unit
@@ -82,11 +86,16 @@ export default class Product extends BaseProduct {
    @Max(0.9)
    minUnit: number;
 
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
-   subType: AppSchema<Category>;
+   @AppProp({ type: [SchemaTypes.Mixed] }, { type: PriceVariant })
+   priceVariants: Array<PriceVariant>;
 
-   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Field' }], required: false })
-   meta?: Array<AppSchema<Field>>;
+   //TODO: validate meta in variant (type field in variant schema) with key with product
+   @AppProp({ type: SchemaTypes.Mixed })
+   meta: Record<string, Array<string>>;
+
+   @ValidateIf((o) => o.isInHouse)
+   @AppProp({ type: [SchemaTypes.Mixed] }, { type: Ingredient })
+   ingredients?: Ingredient[];
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
