@@ -9,16 +9,27 @@ import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import { GetUserDto } from '@shared/user/user.dto';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
+import AddressService from '@shared/address/address.service';
+import { CreatePartnerDto } from './partner.dto';
+import { EUser } from '@common/utils/enum';
 
 @AppService()
-export default class PartnerService extends AUserService {
+export default class PartnerService extends AUserService<Partner> {
    constructor(
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,
+      protected readonly addressService: AddressService,
       @Inject(REPOSITORY) protected readonly repository: Repository<Partner>,
       @Inject(getServiceToken(MERCHANT)) protected readonly merchantService: MerchantServiceMethods,
    ) {
       super();
+   }
+
+   async create({ isSupplier, ...dto }: CreatePartnerDto) {
+      return await this.repository.create({
+         ...(await this.getCreateUserDto({ type: EUser.Partner, ...dto })),
+         isSupplier,
+      });
    }
 
    async getUser(dto: GetUserDto) {

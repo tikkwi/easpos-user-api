@@ -5,7 +5,7 @@ import AppProp from '@common/decorator/app_prop.decorator';
 @Schema()
 export default class Partner extends User {
    @AppProp({ type: Boolean })
-   supplier: boolean;
+   isSupplier: boolean;
 }
 
 export const PartnerSchema = SchemaFactory.createForClass(Partner);

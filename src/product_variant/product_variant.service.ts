@@ -1,25 +1,47 @@
 import AppService from '@common/decorator/app_service.decorator';
 import ACoreService from '@common/core/core.service';
 import { ProductVariant } from './product_variant.schema';
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { REPOSITORY } from '@common/constant';
 import Repository from '@common/core/repository';
 import { CreateProductVariantDto } from './product_variant.dto';
-import { ECategory } from '@common/utils/enum';
+import FieldService from '../field/field.service';
+import ProductService from '../product/product.service';
 
 @AppService()
 export class ProductVariantService extends ACoreService<ProductVariant> {
    constructor(
       @Inject(REPOSITORY) protected readonly repository: Repository<ProductVariant>,
-      private readonly categoryService: CategoryService,
+      private readonly productService: ProductService,
+      private readonly fieldService: FieldService,
    ) {
       super();
    }
 
-   async create({ productId, tagIds, ...dto }: CreateProductVariantDto) {
-      await this.findById({ id: productId });
-      if (tagIds)
-         await this.categoryService.findByIds({ ids: tagIds, type: ECategory.ProductVariantTag });
-      return this.repository.create({ product: productId as any, tags: tagIds as any, ...dto });
+   async create({
+      context,
+      productId,
+      tagsDto,
+      type,
+      metaValue: mv,
+      ...dto
+   }: CreateProductVariantDto) {
+      const { data: product } = await this.productService.findById({ id: productId });
+      if (!product.meta[type]) throw new BadRequestException('Invalid variant type');
+      const tags = [];
+      const metaValue = {};
+
+      for (const fieldId of product.meta[type]) {
+         await this.fieldService.validateField({ id: fieldId, value: mv[fieldId] });
+         metaValue[fieldId] = mv[fieldId];
+      }
+
+      if (tagsDto)
+         for (const tg of tagsDto) {
+            const { data: tag } = await context.get('categoryService').getCategory(tg);
+            tags.push(tag);
+         }
+
+      return this.repository.create({ product, tags, type, metaValue, ...dto });
    }
 }
