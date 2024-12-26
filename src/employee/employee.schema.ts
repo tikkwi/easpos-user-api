@@ -47,6 +47,9 @@ export class EmployeeConfig {
 
    @IsBoolean()
    allowAdminApp: boolean;
+
+   @IsString({ each: true })
+   permissions?: Array<string>;
 }
 
 @Schema()

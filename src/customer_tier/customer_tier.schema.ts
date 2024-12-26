@@ -2,17 +2,7 @@ import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
 import BaseSchema from '@common/core/base.schema';
-import {
-   IsBoolean,
-   IsEnum,
-   IsNumber,
-   IsOptional,
-   IsString,
-   Max,
-   Min,
-   ValidateIf,
-} from 'class-validator';
-import { EClientPermission } from '@common/utils/enum';
+import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
 import { IsAppString } from '@common/validator';
 import { CALENDAR_DATE } from '@common/constant';
 
@@ -32,9 +22,8 @@ class TierBenefit {
    coupon?: string;
 
    @ValidateIf((o) => !o.isCouponReward)
-   @IsOptional()
-   @IsEnum(EClientPermission, { each: true })
-   permissions?: Array<EClientPermission>;
+   @IsString({ each: true })
+   permissions?: Array<string>;
 }
 
 class SustainPoint {

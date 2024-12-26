@@ -3,9 +3,10 @@ import { SchemaTypes } from 'mongoose';
 import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
-import { EProduct, EProductStatus } from '@common/utils/enum';
+import { EProduct, EProductStatus, EType } from '@common/utils/enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import Unit from '@shared/unit/unit.schema';
+import { IsRecord } from '@common/validator/is_record.validator';
 
 export class PriceVariant {
    @IsMongoId() //NOTE:tag category
@@ -90,7 +91,17 @@ export default class Product extends BaseProduct {
    priceVariants: Array<PriceVariant>;
 
    //TODO: validate meta in variant (type field in variant schema) with key with product
-   @AppProp({ type: SchemaTypes.Mixed })
+   @AppProp(
+      { type: SchemaTypes.Mixed },
+      {
+         validators: [
+            {
+               func: IsRecord,
+               args: [EType.String, EType.String, true],
+            },
+         ],
+      },
+   )
    meta: Record<string, Array<string>>;
 
    @ValidateIf((o) => o.isInHouse)

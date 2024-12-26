@@ -5,7 +5,7 @@ import { IntersectionType, PickType } from '@nestjs/swagger';
 import { SelectionTypeIf } from '@common/dto/core.dto';
 import { EmployeeConfig } from '../employee/employee.schema';
 
-//NOTE:  all config here can be overwrite at specific employee level
+//NOTE:  all config here can be overwritten at specific employee level
 @Schema()
 export default class EmployeeRole extends IntersectionType(
    BaseSchema,

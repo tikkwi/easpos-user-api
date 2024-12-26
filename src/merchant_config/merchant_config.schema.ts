@@ -3,6 +3,8 @@ import BaseSchema from '@common/core/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { IsNumber, Max, Min } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
+import { IsRecord } from '@common/validator/is_record.validator';
+import { EType } from '@common/utils/enum';
 
 function AdjPriority() {
    return function (target: any, key: string) {
@@ -81,7 +83,17 @@ export default class MerchantConfig extends BaseSchema {
    adjustmentPriority: AdjustmentPriority;
 
    //NOTE: key-> category(SupplierStock), value-> field array
-   @AppProp({ type: SchemaTypes.Mixed, required: false })
+   @AppProp(
+      { type: SchemaTypes.Mixed, required: false },
+      {
+         validators: [
+            {
+               func: IsRecord,
+               args: [EType.String, EType.String, true],
+            },
+         ],
+      },
+   )
    defaultSupplierStockMeta: Record<string, Array<string>>;
 }
 

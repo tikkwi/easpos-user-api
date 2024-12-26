@@ -4,6 +4,8 @@ import { SchemaTypes } from 'mongoose';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Amount } from '@common/dto/entity.dto';
+import { IsRecord } from '@common/validator/is_record.validator';
+import { EType } from '@common/utils/enum';
 
 @Schema()
 export class ProductVariant extends IntersectionType(
@@ -20,7 +22,7 @@ export class ProductVariant extends IntersectionType(
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Product' })
    product: Product;
 
-   @AppProp({ type: SchemaTypes.Mixed }) //NOTE: manual validation
+   @AppProp({ type: SchemaTypes.Mixed }, { validators: [{ func: IsRecord, args: [EType.String] }] })
    metaValue?: Record<string, any>;
 
    //NOTE: price must be based on base unit
