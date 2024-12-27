@@ -1,4 +1,3 @@
-import { OmitType } from '@nestjs/swagger';
 import { CoreDto } from '@common/dto/core.dto';
 import { IsBoolean, IsMongoId, ValidateIf } from 'class-validator';
 import CustomerTier from './customer_tier.schema';
@@ -13,4 +12,4 @@ export class GetTierDto {
    isBaseTier?: boolean;
 }
 
-export class CreateCustomerTierDto extends OmitType(CoreDto(CustomerTier), ['merchant']) {}
+export class CreateCustomerTierDto extends CoreDto(CustomerTier) {}

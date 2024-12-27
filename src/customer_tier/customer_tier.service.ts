@@ -27,9 +27,6 @@ export class CustomerTierService extends ACoreService {
    }
 
    async createTier(dto: CreateCustomerTierDto) {
-      return await this.repository.create({
-         ...dto,
-         merchant: (await this.db.get('merchant')).merchant,
-      });
+      return await this.repository.create(dto);
    }
 }

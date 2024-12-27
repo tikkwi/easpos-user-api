@@ -21,9 +21,9 @@ export default class CustomerService extends AUserService<Customer> {
       @Inject(REPOSITORY) protected readonly repository: Repository<Customer>,
       @Inject(getServiceToken(MERCHANT)) protected readonly merchantService: MerchantServiceMethods,
       protected readonly db: AppRedisService,
+      protected readonly addressService: AddressService,
       private readonly tierService: CustomerTierService,
       private readonly allowanceService: MerchantAllowanceService,
-      private readonly addressService: AddressService,
    ) {
       super();
    }
@@ -56,7 +56,7 @@ export default class CustomerService extends AUserService<Customer> {
       return { data: user, message: undefined };
    }
 
-   // async addCustomerAllowance({ context, customerId, allowanceId }: AddCustomerAllowanceDto) {
+   // async addCustomerAllowance({ request_context, customerId, allowanceId }: AddCustomerAllowanceDto) {
    //    const { data: customer } = await this.repository.findOne({
    //       id: customerId,
    //       errorOnNotFound: true,
@@ -64,7 +64,7 @@ export default class CustomerService extends AUserService<Customer> {
    //    });
    //    const updateCredit = (exp: string | Date, ext: boolean, amount: number, point?: boolean) => {
    //       if (exp) {
-   //          if (ext || !context.get('merchantConfig')[`extCus${point ? 'Point' : 'Cash'}`])
+   //          if (ext || !request_context.get('merchantConfig')[`extCus${point ? 'Point' : 'Cash'}`])
    //             customer.timedPoint[new Date(exp).getTime()] = amount;
    //          else {
    //             const extCredit = `extensible${point ? 'Point' : 'Cash'}`;
@@ -93,6 +93,6 @@ export default class CustomerService extends AUserService<Customer> {
    //          allowance.benefit.type === EMerchantAllowanceBenefit.Point,
    //       );
    //    else customer.allowances.push(allowance);
-   //    return { data: await customer.save({ session: context.get('session') }) };
+   //    return { data: await customer.save({ session: request_context.get('session') }) };
    // }
 }
