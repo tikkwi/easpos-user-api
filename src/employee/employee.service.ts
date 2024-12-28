@@ -8,12 +8,14 @@ import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import Employee from './employee.schema';
+import AddressService from '@shared/address/address.service';
 
 @AppService()
 export default class EmployeeService extends AUserService {
    constructor(
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,
+      protected readonly addressService: AddressService,
       @Inject(REPOSITORY) protected readonly repository: Repository<Employee>,
       @Inject(getServiceToken(MERCHANT)) protected readonly merchantService: MerchantServiceMethods,
    ) {

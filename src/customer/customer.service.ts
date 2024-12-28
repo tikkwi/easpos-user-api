@@ -10,7 +10,6 @@ import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Repository from '@common/core/repository';
 import Customer from './customer.schema';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
-import MerchantAllowanceService from '../allowance/allowance.service';
 import { EUser } from '@common/utils/enum';
 import AddressService from '@shared/address/address.service';
 
@@ -23,7 +22,6 @@ export default class CustomerService extends AUserService<Customer> {
       protected readonly db: AppRedisService,
       protected readonly addressService: AddressService,
       private readonly tierService: CustomerTierService,
-      private readonly allowanceService: MerchantAllowanceService,
    ) {
       super();
    }

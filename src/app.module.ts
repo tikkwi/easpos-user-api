@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { UserAppModule } from './user_app/user_app.module';
-import { MerchantUserRoleModule } from './employee_role/employee_role.module';
-import { MerchantUserModule } from './employee/employee.module';
 import { PartnerModule } from './partner/partner.module';
 import { CustomerTierModule } from './customer_tier/customer_tier.module';
 import CoreModule from '@common/core/module/core.module';
@@ -13,8 +11,6 @@ import CustomerModule from './customer/customer.module';
       CoreModule,
       CoreHttpModule,
       UserAppModule,
-      MerchantUserRoleModule,
-      MerchantUserModule,
       CustomerTierModule,
       CustomerModule,
       PartnerModule,

@@ -16,11 +16,7 @@ export class GetEmployeeRoleDto {
    merchantId?: string;
 }
 
-export class CreateEmployeeRoleDto extends PickType(EmployeeRole, [
-   'role',
-   'isOwner',
-   'basicSalary',
-]) {
+export class CreateEmployeeRoleDto extends PickType(EmployeeRole, ['isOwner', 'basicSalary']) {
    @ValidateIf((o) => o.isOwner)
    @IsMongoId()
    merchantId?: string;

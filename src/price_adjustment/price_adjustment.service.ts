@@ -232,11 +232,9 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
             lean: false,
          });
          for (const {
-            product: {
-               unitQuantity: { unitId },
-            },
+            product: { unit },
          } of pVs) {
-            if (unitId !== tProduct.unitQuantity.unitId)
+            if (unit !== tProduct.unit)
                throw new BadRequestException('FOC Stock unit differ from target stock');
          }
       }
