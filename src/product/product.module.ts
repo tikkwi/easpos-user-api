@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import Product, { ProductSchema } from './product.schema';
+import { ProductSchema } from './product.schema';
 import ProductController from './product.controller';
 import ProductService from './product.service';
-import { getRepositoryProvider } from '@common/utils/misc';
+import { SCHEMA } from '@common/constant';
 
 @Module({
-   imports: [MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }])],
    controllers: [ProductController],
-   providers: [ProductService, getRepositoryProvider({ name: Product.name })],
+   providers: [ProductService, { provide: SCHEMA, useValue: ProductSchema }],
    exports: [ProductService],
 })
 export default class ProductModule {}

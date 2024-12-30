@@ -1,18 +1,12 @@
 import Field from '../field/field.schema';
-import Repository from '@common/core/repository';
-import { BadRequestException, Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
-import ACoreService from '@common/core/core.service';
+import { BadRequestException } from '@nestjs/common';
+import BaseService from '@common/core/base/base.service';
 import { FieldValue } from '@common/dto/entity.dto';
 import { EField } from '@common/utils/enum';
 import { isDateString, isMongoId, isNumber, isPhoneNumber, isURL } from 'class-validator';
 import { isBoolean } from 'lodash';
 
-export default class FieldService extends ACoreService<Field> {
-   constructor(@Inject(REPOSITORY) protected readonly repository: Repository<Field>) {
-      super();
-   }
-
+export default class FieldService extends BaseService<Field> {
    async validateField({ id, value }: FieldValue) {
       const { data: fieldData } = await this.findById({ id });
       let errMsg = '';

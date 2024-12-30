@@ -1,6 +1,6 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import { IntersectionType, PickType } from '@nestjs/swagger';
 import { SelectionTypeIf } from '@common/dto/core.dto';
 import { EmployeeConfig } from '../employee/employee.schema';

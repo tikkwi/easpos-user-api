@@ -5,7 +5,9 @@
   "sourceRoot": "./",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["libs/common/src/proto/**/*.proto"],
+    "assets": [
+      "libs/common/proto/**/*.proto"
+    ],
     "watchAssets": true
   }
 }

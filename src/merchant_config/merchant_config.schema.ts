@@ -1,5 +1,5 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { IsNumber, Max, Min } from 'class-validator';
 import { SchemaTypes } from 'mongoose';

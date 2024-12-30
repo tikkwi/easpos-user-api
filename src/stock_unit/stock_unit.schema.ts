@@ -1,4 +1,4 @@
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import { EProductUnitStatus } from '@common/utils/enum';

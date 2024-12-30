@@ -1,10 +1,10 @@
-import { BaseDto, SelectionTypeIf } from '@common/dto/core.dto';
+import { SelectionTypeIf } from '@common/dto/core.dto';
 import { IsMongoId, IsOptional } from 'class-validator';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { CreateUserDto } from '@shared/user/user.dto';
 import Customer from './customer.schema';
 
-export class AddCustomerAllowanceDto extends BaseDto {
+export class AddCustomerAllowanceDto {
    @IsMongoId()
    customerId: string;
 
@@ -15,13 +15,12 @@ export class AddCustomerAllowanceDto extends BaseDto {
 const guestPartial: Array<keyof CreateUserDto> = ['firstName', 'lastName', 'mail', 'mobileNo'];
 
 export class CreateCustomerDto extends IntersectionType(
-   BaseDto,
    OmitType(CreateUserDto, guestPartial),
    SelectionTypeIf((o) => !o.guest, CreateUserDto, guestPartial, true),
    PickType(Customer, ['guest']),
 ) {}
 
-export class GetCustomerDto extends BaseDto {
+export class GetCustomerDto {
    @IsOptional()
    @IsMongoId()
    id?: string | ObjectId;

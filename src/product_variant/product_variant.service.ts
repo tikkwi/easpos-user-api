@@ -1,32 +1,25 @@
 import AppService from '@common/decorator/app_service.decorator';
-import ACoreService from '@common/core/core.service';
+import BaseService from '@common/core/base/base.service';
 import { ProductVariant } from './product_variant.schema';
-import { BadRequestException, Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
-import Repository from '@common/core/repository';
+import { BadRequestException } from '@nestjs/common';
 import { CreateProductVariantDto } from './product_variant.dto';
 import FieldService from '../field/field.service';
 import ProductService from '../product/product.service';
+import CategoryService from '@shared/category/category.service';
 
 @AppService()
-export class ProductVariantService extends ACoreService<ProductVariant> {
+export class ProductVariantService extends BaseService<ProductVariant> {
    constructor(
-      @Inject(REPOSITORY) protected readonly repository: Repository<ProductVariant>,
       private readonly productService: ProductService,
       private readonly fieldService: FieldService,
+      private readonly categoryService: CategoryService,
    ) {
       super();
    }
 
-   async create({
-      context,
-      productId,
-      tagsDto,
-      type,
-      metaValue: mv,
-      ...dto
-   }: CreateProductVariantDto) {
+   async create({ productId, tagsDto, type, metaValue: mv, ...dto }: CreateProductVariantDto) {
       const { data: product } = await this.productService.findById({ id: productId });
+      const repository = await this.getRepository();
       if (!product.meta[type]) throw new BadRequestException('Invalid variant type');
       const tags = [];
       const metaValue = {};
@@ -38,10 +31,10 @@ export class ProductVariantService extends ACoreService<ProductVariant> {
 
       if (tagsDto)
          for (const tg of tagsDto) {
-            const { data: tag } = await context.get('categoryService').getCategory(tg);
+            const { data: tag } = await this.categoryService.getCategory(tg);
             tags.push(tag);
          }
 
-      return this.repository.create({ product, tags, type, metaValue, ...dto });
+      return repository.create({ product, tags, type, metaValue, ...dto });
    }
 }

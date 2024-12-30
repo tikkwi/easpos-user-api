@@ -1,8 +1,6 @@
-import ACoreService from '@common/core/core.service';
+import BaseService from '@common/core/base/base.service';
 import PriceAdjustment from './price_adjustment.schema';
-import { BadRequestException, Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
-import Repository from '@common/core/repository';
+import { BadRequestException } from '@nestjs/common';
 import {
    GetAdjustedPriceDto,
    GetApplicableAdjustmentDto,
@@ -100,9 +98,8 @@ export const getBaseAdjustmentQuery = (
    };
 };
 
-export default class PriceAdjustmentService extends ACoreService<PriceAdjustment> {
+export default class PriceAdjustmentService extends BaseService<PriceAdjustment> {
    constructor(
-      @Inject(REPOSITORY) protected readonly repository: Repository<PriceAdjustment>,
       private readonly stockUnitService: StockUnitService,
       private readonly customerService: CustomerService,
       private readonly promoCodeService: PromoCodeService,
@@ -114,15 +111,14 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
 
    async getApplicableAdjustments({
       promoCode,
-      context,
       customerId,
       product,
       sale,
       ...dto
    }: GetApplicableAdjustmentDto) {
+      const repository = await this.getRepository();
       const { data: customer } = await this.customerService.getCustomer({
          id: customerId,
-         context,
       });
       if (sale) {
          for (const { appliedUnstackableAdjustment } of sale.products) {
@@ -143,7 +139,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
          } = await this.stockUnitService.getStockPurchased({
             ...product,
             customerId,
-            context,
          }));
       if (appliedUnstackableVariant)
          return { data: undefined, message: 'The un-stackable price variant is applied' };
@@ -162,7 +157,7 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
          if (pC?.promotion) return await this.#filterProductAdjustments([pC.promotion], variantId);
          return { data: undefined, message: 'Promo code is not eligible' };
       } else {
-         const { data: adjustments } = await this.repository.find({
+         const { data: adjustments } = await repository.find({
             filter: {
                autoTrigger: true,
                ...getBaseAdjustmentQuery({
@@ -189,7 +184,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
          absoluteAdjustment,
          percentageAdjustment,
       },
-      context,
    }: GetAdjustedPriceDto) {
       let focProducts: Array<ProductCompactDto> = [];
       if (focStocks || focStocksWithTargetAmount) {
@@ -200,7 +194,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
             quantity,
             focStocks,
             focStocksWithTargetAmount,
-            context,
          }));
       }
       const adjustment = percentageAdjustment
@@ -215,7 +208,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
       quantity,
       focStocks,
       focStocksWithTargetAmount,
-      context,
    }: GetFocProductsDto) {
       const focProducts: Array<ProductCompactDto & { usedAdjustment: boolean }> = [];
       const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
@@ -247,7 +239,6 @@ export default class PriceAdjustmentService extends ACoreService<PriceAdjustment
             nextBatchOnStockOut: true,
             isFoc: true,
             quantity: focStocksWithTargetAmount ? quantity : focStocks[i].quantity,
-            context,
          });
          const baseInfo = ['name', 'description', 'attachments'];
          focProducts.push({

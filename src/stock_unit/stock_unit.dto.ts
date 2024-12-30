@@ -1,5 +1,5 @@
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import { BaseDto, FindByIdDto, FindDto } from '@common/dto/core.dto';
+import { FindByIdDto, FindDto } from '@common/dto/core.dto';
 import { ExchangeUnitDto } from '@shared/unit/unit.dto';
 import {
    IsBoolean,
@@ -50,7 +50,7 @@ export class GetStockLeftDto extends IntersectionType(
    PickType(ExchangeUnitDto, ['targetId']),
 ) {}
 
-export class GetStockPurchasedDto extends BaseDto {
+export class GetStockPurchasedDto {
    @ValidateIf((o) => !o.variantId)
    @IsString()
    barcode?: string;

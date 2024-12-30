@@ -1,5 +1,5 @@
 import { Schema } from '@nestjs/mongoose';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import StockUnit from '../stock_unit/stock_unit.schema';

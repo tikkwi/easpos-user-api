@@ -7,12 +7,7 @@ import { Amount, BasicInfo } from '@common/dto/entity.dto';
 import StockUnit from '../stock_unit/stock_unit.schema';
 import { CategoryDto } from '@shared/category/category.dto';
 
-export class CreateProductDto extends OmitType(CoreDto(Product), [
-   'category',
-   'tags',
-   'unit',
-   'context',
-]) {
+export class CreateProductDto extends OmitType(CoreDto(Product), ['category', 'tags', 'unit']) {
    @IsOptional()
    @ValidateNested({ each: true })
    @Type(() => CategoryDto)

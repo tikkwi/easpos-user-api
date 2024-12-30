@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { UserAppModule } from './user_app/user_app.module';
-import { PartnerModule } from './partner/partner.module';
 import { CustomerTierModule } from './customer_tier/customer_tier.module';
 import CoreModule from '@common/core/module/core.module';
 import CoreHttpModule from '@common/core/module/core_http.module';
-import CustomerModule from './customer/customer.module';
+import AddressModule from '@shared/address/address.module';
 
 @Module({
    imports: [
       CoreModule,
       CoreHttpModule,
-      UserAppModule,
+      AddressModule,
       CustomerTierModule,
-      CustomerModule,
-      PartnerModule,
+      // CustomerModule,
+      // PartnerModule,
+      UserAppModule,
    ],
    controllers: [],
 })

@@ -1,7 +1,7 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
 import { IsAppString } from '@common/validator';
 import { CALENDAR_DATE } from '@common/constant';

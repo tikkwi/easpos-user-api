@@ -1,17 +1,14 @@
-import ACoreService from '@common/core/core.service';
+import BaseService from '@common/core/base/base.service';
 import Product from './product.schema';
 import AppService from '@common/decorator/app_service.decorator';
-import { BadRequestException, Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
-import Repository from '@common/core/repository';
+import { BadRequestException } from '@nestjs/common';
 import { CreateProductDto } from './product.dto';
 import UnitService from '@shared/unit/unit.service';
 import { isMongoId, isString } from 'class-validator';
 
 @AppService()
-export default class ProductService extends ACoreService<Product> {
+export default class ProductService extends BaseService<Product> {
    constructor(
-      @Inject(REPOSITORY) protected readonly repository: Repository<Product>,
       private readonly categoryService: CategoryService,
       private readonly unitService: UnitService,
    ) {
@@ -19,6 +16,7 @@ export default class ProductService extends ACoreService<Product> {
    }
 
    async create({ tagsDto, categoryDto, unitId, meta: mta, ...dto }: CreateProductDto) {
+      const repository = await this.getRepository();
       const tags = [];
       const { data: category } = await this.categoryService.getCategory(categoryDto);
       const { data: unit } = await this.unitService.findById({ id: unitId });
@@ -46,7 +44,7 @@ export default class ProductService extends ACoreService<Product> {
          }
          meta = { ...meta, ...mta };
       }
-      return this.repository.create({
+      return repository.create({
          ...dto,
          tags,
          category,

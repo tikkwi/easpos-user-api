@@ -1,5 +1,5 @@
 import { Schema } from '@nestjs/mongoose';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { ProductSale } from '../product_sale/product_sale.schema';
 import AppProp from '@common/decorator/app_prop.decorator';

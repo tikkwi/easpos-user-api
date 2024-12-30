@@ -1,6 +1,6 @@
 import { IsBoolean, IsMongoId, IsNumber, IsOptional, Max, Min, ValidateIf } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
 import { EProduct, EProductStatus, EType } from '@common/utils/enum';

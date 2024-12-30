@@ -1,11 +1,9 @@
 import AppService from '@common/decorator/app_service.decorator';
-import ACoreService from '@common/core/core.service';
+import BaseService from '@common/core/base/base.service';
 import StockUnit from './stock_unit.schema';
-import { BadRequestException, Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
-import Repository from '@common/core/repository';
+import { BadRequestException } from '@nestjs/common';
 import UnitService from '@shared/unit/unit.service';
-import { CreateStockUnitDto, GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
+import { GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
 import { EProductUnitStatus } from '@common/utils/enum';
 import CustomerService from '../customer/customer.service';
 import { PriceVariant } from '../product/product.schema';
@@ -23,9 +21,8 @@ type PurchasedStockUnit = {
 };
 
 @AppService()
-export default class StockUnitService extends ACoreService<StockUnit> {
+export default class StockUnitService extends BaseService<StockUnit> {
    constructor(
-      @Inject(REPOSITORY) protected readonly repository: Repository<StockUnit>,
       private readonly unitService: UnitService,
       private readonly customerService: CustomerService,
       private readonly variantService: ProductVariantService,
@@ -38,18 +35,10 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       super();
    }
 
-   async create({
-      variantId,
-      batchId,
-      locationId,
-      sectionId,
-      shelfId,
-      ...dto
-   }: CreateStockUnitDto) {}
-
    async getStockLeft({ id }: Pick<FindByIdDto, 'id'>) {
+      const repository = await this.getRepository();
       let sL = 0;
-      const { data } = await this.repository.find({
+      const { data } = await repository.find({
          filter: { productVariant: id, isOutOfStock: false },
       });
       data.forEach(({ stockLeft }) => (sL += stockLeft));
@@ -57,7 +46,8 @@ export default class StockUnitService extends ACoreService<StockUnit> {
    }
 
    async getStockUnit({ barcode, variantId, populate, lean }: GetStockUnitDto) {
-      return this.repository.findOne({
+      const repository = await this.getRepository();
+      return repository.findOne({
          filter: { barcode, productVariant: variantId },
          errorOnNotFound: true,
          options: { lean, populate },
@@ -71,12 +61,12 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       nextBatchOnStockOut,
       customerId,
       isFoc,
-      context,
    }: GetStockPurchasedDto) {
+      const repository = await this.getRepository();
       const { data: baseUnit } = await this.unitService.getBase({ unitId: quantity.unitId });
       const { data: baseQuantity } = await this.unitService.exchangeUnit({ current: [quantity] });
       const { data: customer } = customerId
-         ? await this.customerService.getCustomer({ id: customerId, context })
+         ? await this.customerService.getCustomer({ id: customerId })
          : { data: undefined };
       let missingQuantity = baseQuantity;
       const units: Array<PurchasedStockUnit> = [];
@@ -149,7 +139,7 @@ export default class StockUnitService extends ACoreService<StockUnit> {
          : undefined);
       if (stock) await updateQuantity(stock);
       if ((missingQuantity && nextBatchOnStockOut) || variantId) {
-         const { data: eOStock } = await this.repository.findOne({
+         const { data: eOStock } = await repository.findOne({
             filter: {
                earlyOut: true,
                productVariant: variantId ?? stock.productVariant,
@@ -164,7 +154,7 @@ export default class StockUnitService extends ACoreService<StockUnit> {
       if (missingQuantity) {
          let stkLeft = true;
          while (missingQuantity && stkLeft) {
-            const stk = await this.repository.custom((model) =>
+            const stk = await repository.custom((model) =>
                model.aggregate([
                   { $match: { _id: { $nin: unitIds } } },
                   {

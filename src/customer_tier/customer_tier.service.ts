@@ -1,23 +1,18 @@
-import { Inject } from '@nestjs/common';
-import { REPOSITORY } from '@common/constant';
 import { CreateCustomerTierDto, GetTierDto } from './customer_tier.dto';
 import AppService from '@common/decorator/app_service.decorator';
-import ACoreService from '@common/core/core.service';
+import BaseService from '@common/core/base/base.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
-import Repository from '@common/core/repository';
 import CustomerTier from './customer_tier.schema';
 
 @AppService()
-export class CustomerTierService extends ACoreService {
-   constructor(
-      @Inject(REPOSITORY) protected readonly repository: Repository<CustomerTier>,
-      private readonly db: AppRedisService,
-   ) {
+export class CustomerTierService extends BaseService<CustomerTier> {
+   constructor(private readonly db: AppRedisService) {
       super();
    }
 
    async getTier({ id, isBaseTier }: GetTierDto) {
-      return await this.repository.findOne({
+      const repository = await this.getRepository();
+      return await repository.findOne({
          filter: {
             id,
             isBaseTier,
@@ -27,6 +22,7 @@ export class CustomerTierService extends ACoreService {
    }
 
    async createTier(dto: CreateCustomerTierDto) {
-      return await this.repository.create(dto);
+      const repository = await this.getRepository();
+      return await repository.create(dto);
    }
 }

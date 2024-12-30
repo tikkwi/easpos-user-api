@@ -13,7 +13,6 @@ import { GetStockPurchasedDto } from '../stock_unit/stock_unit.dto';
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 import { Adjustment } from './price_adjustment.schema';
-import { BaseDto } from '@common/dto/core.dto';
 
 class PreliminaryProductVariantDto {
    @IsMongoId()
@@ -26,6 +25,7 @@ class PreliminaryProductVariantDto {
    @IsBoolean()
    appliedUnstackableAdjustment: boolean;
 }
+
 class PreliminarySaleDto {
    @ValidateNested({ each: true })
    @Type(() => PreliminaryProductVariantDto)
@@ -36,18 +36,19 @@ class PreliminarySaleDto {
    price: Amount;
 }
 
-export class GetApplicableAdjustmentDto extends IntersectionType(
-   PickType(NewSaleDto, ['currencyId', 'paymentMethodId', 'customerId']),
-   BaseDto,
-) {
+export class GetApplicableAdjustmentDto extends PickType(NewSaleDto, [
+   'currencyId',
+   'paymentMethodId',
+   'customerId',
+]) {
    @IsOptional()
    @IsString()
    promoCode: string;
 
    @ValidateIf((o) => !o.sale)
    @ValidateNested()
-   @Type(() => OmitType(GetStockPurchasedDto, ['context', 'customerId']))
-   product?: Omit<GetStockPurchasedDto, 'context' | 'customerId'>;
+   @Type(() => OmitType(GetStockPurchasedDto, ['customerId']))
+   product?: Omit<GetStockPurchasedDto, 'customerId'>;
 
    @ValidateIf((o) => !o.product)
    @ValidateNested()
@@ -55,7 +56,7 @@ export class GetApplicableAdjustmentDto extends IntersectionType(
    sale?: PreliminarySaleDto;
 }
 
-export class GetAdjustedPriceDto extends BaseDto {
+export class GetAdjustedPriceDto {
    @IsBoolean()
    isMarkup: boolean;
 
@@ -105,7 +106,6 @@ export class GetBaseAdjustmentQueryDto extends PickType(NewSaleDto, [
 export class GetFocProductsDto extends IntersectionType(
    PickType(GetAdjustedPriceDto, ['quantity']),
    PickType(Adjustment, ['focStocksWithTargetAmount', 'focStocks']),
-   BaseDto,
 ) {
    @ValidateIf((o) => o.focStocksWithTargetAmount)
    @IsMongoId()

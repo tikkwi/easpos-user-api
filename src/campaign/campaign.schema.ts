@@ -1,6 +1,6 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import Category from '@shared/category/category.schema';
 import { EStatus } from '@common/utils/enum';
 import AppProp from '@common/decorator/app_prop.decorator';

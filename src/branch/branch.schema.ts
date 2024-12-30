@@ -1,7 +1,7 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import BaseSchema from '@common/core/base.schema';
+import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Address from '@shared/address/address.schema';
 import { EStatus } from '@common/utils/enum';
