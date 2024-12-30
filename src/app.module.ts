@@ -4,6 +4,8 @@ import { CustomerTierModule } from './customer_tier/customer_tier.module';
 import CoreModule from '@common/core/module/core.module';
 import CoreHttpModule from '@common/core/module/core_http.module';
 import AddressModule from '@shared/address/address.module';
+import CustomerModule from './customer/customer.module';
+import { PartnerModule } from './partner/partner.module';
 
 @Module({
    imports: [
@@ -11,8 +13,8 @@ import AddressModule from '@shared/address/address.module';
       CoreHttpModule,
       AddressModule,
       CustomerTierModule,
-      // CustomerModule,
-      // PartnerModule,
+      CustomerModule,
+      PartnerModule,
       UserAppModule,
    ],
    controllers: [],

@@ -12,6 +12,7 @@ import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import { EUser } from '@common/utils/enum';
 import AddressService from '@shared/address/address.service';
 import RequestContextService from '@common/core/request_context/request_context_service';
+import CategoryService from '@shared/category/category.service';
 
 @AppService()
 export default class CustomerService extends AUserService<Customer> {

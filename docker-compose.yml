@@ -9,49 +9,49 @@ services:
       - 'redis-data:/data'
       - './libs/common/script/redis.conf:/usr/local/etc/redis/redis.conf'
     command: >
-      sh -c "touch /data/default.acl && redis-server /usr/local/etc/redis/redis.conf"
+      sh -c "touch /data/default .acl && redis-server /usr/local/etc/redis/redis.conf"
 
-#  mongo1:
-#    container_name: mongo1
-#    image: mongo
-#    restart: always
-#    ports:
-#      - '27017:27017'
-#    networks:
-#      - mongo-cluster
-#    volumes:
-#      - 'mongo1-data:/data'
-#      - 'mongo1-config:/data/configdb'
-#      - 'mongo1-db:/data/db'
-#    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27017" ]
-#
-#  mongo2:
-#    container_name: mongo2
-#    image: mongo
-#    restart: always
-#    ports:
-#      - '27018:27018'
-#    networks:
-#      - mongo-cluster
-#    volumes:
-#      - 'mongo2-data:/data'
-#      - 'mongo2-config:/data/configdb'
-#      - 'mongo2-db:/data/db'
-#    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27018" ]
-#
-#  mongo3:
-#    container_name: mongo3
-#    image: mongo
-#    restart: always
-#    ports:
-#      - '27019:27019'
-#    networks:
-#      - mongo-cluster
-#    volumes:
-#      - 'mongo3-data:/data'
-#      - 'mongo3-config:/data/configdb'
-#      - 'mongo3-db:/data/db'
-#    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27019" ]
+  mongo1:
+    container_name: mongo1
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    networks:
+      - mongo-cluster
+    volumes:
+      - 'mongo1-data:/data'
+      - 'mongo1-config:/data/configdb'
+      - 'mongo1-db:/data/db'
+    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27017" ]
+
+  mongo2:
+    container_name: mongo2
+    image: mongo
+    restart: always
+    ports:
+      - '27018:27018'
+    networks:
+      - mongo-cluster
+    volumes:
+      - 'mongo2-data:/data'
+      - 'mongo2-config:/data/configdb'
+      - 'mongo2-db:/data/db'
+    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27018" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo
+    restart: always
+    ports:
+      - '27019:27019'
+    networks:
+      - mongo-cluster
+    volumes:
+      - 'mongo3-data:/data'
+      - 'mongo3-config:/data/configdb'
+      - 'mongo3-db:/data/db'
+    command: [ "mongod", "--replSet", "rs0","--bind_ip_all", "--port", "27019" ]
 
 
 #  app:
@@ -71,15 +71,15 @@ services:
 
 volumes:
   redis-data:
-#  mongo1-data:
-#  mongo1-config:
-#  mongo1-db:
-#  mongo2-data:
-#  mongo2-config:
-#  mongo2-db:
-#  mongo3-data:
-#  mongo3-config:
-#  mongo3-db:
+  mongo1-data:
+  mongo1-config:
+  mongo1-db:
+  mongo2-data:
+  mongo2-config:
+  mongo2-db:
+  mongo3-data:
+  mongo3-config:
+  mongo3-db:
 
 networks:
   mongo-cluster:

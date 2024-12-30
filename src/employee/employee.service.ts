@@ -8,6 +8,7 @@ import AppRedisService from '@common/core/app_redis/app_redis.service';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import Employee from './employee.schema';
 import AddressService from '@shared/address/address.service';
+import CategoryService from "@shared/category/category.service";
 
 @AppService()
 export default class EmployeeService extends AUserService<Employee> {

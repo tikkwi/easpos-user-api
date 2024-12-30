@@ -5,6 +5,7 @@ import { BadRequestException } from '@nestjs/common';
 import { CreateProductDto } from './product.dto';
 import UnitService from '@shared/unit/unit.service';
 import { isMongoId, isString } from 'class-validator';
+import CategoryService from '@shared/category/category.service';
 
 @AppService()
 export default class ProductService extends BaseService<Product> {
