@@ -3,9 +3,10 @@ import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import { Amount, Dimension, OperatingSchedule } from '@common/dto/entity.dto';
+import { Amount, Dimension } from '@common/dto/entity.dto';
 import { ELocationStatus } from '@common/utils/enum';
 import Address from '@shared/address/address.schema';
+import { IsPeriod } from '@common/validator';
 
 //Stock location imply both warehouse and store
 @Schema()
@@ -45,8 +46,8 @@ export default class StockLocation extends BaseSchema {
    @AppProp({ type: String, enum: ELocationStatus })
    status: ELocationStatus;
 
-   @AppProp({ type: SchemaTypes.Mixed }, { type: OperatingSchedule })
-   operatingSchedule?: OperatingSchedule;
+   @AppProp({ type: String, required: false }, { validators: [{ func: IsPeriod }] })
+   operatingSchedule?: string;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Address' })
    address: Address;

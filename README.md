@@ -44,10 +44,9 @@
 - ### Cautions about ```Request Scope Service```
     - While ```Request Scope Service``` provide convenient way to maintain request-specific instance, it raise tons of
       challenges
-    - ```Default Scope Service``` create only only once and by the time they are create ```Request Scope Dependencies```
+    - ```Default Scope Service``` create only once and by the time they are create ```Request Scope Dependencies```
       are ```undefined``` and as ```Default Scope Service``` won't re-create instance, these will be ```undefined```
       forever
     - So we'll have to use run-time dep resolver like ```ModuleRef``` every time we need throughout the service
     - So, we should avoid ```Request Scope``` as much as we can and should handle ```Request``` specific state
       with ```Interceptor```.
-- Naming is matter for handler (both ```http``` and ```grpc```) and proto definition

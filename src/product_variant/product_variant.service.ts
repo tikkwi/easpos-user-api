@@ -17,15 +17,15 @@ export class ProductVariantService extends BaseService<ProductVariant> {
       super();
    }
 
-   async create({ productId, tagsDto, type, metaValue: mv, ...dto }: CreateProductVariantDto) {
-      const { data: product } = await this.productService.findById({ id: productId });
-      const repository = await this.getRepository();
+   async create({ ctx, productId, tagsDto, type, metaValue: mv, ...dto }: CreateProductVariantDto) {
+      const { data: product } = await this.productService.findById({ id: productId, ctx });
+      const repository = await this.getRepository(ctx.connection);
       if (!product.meta[type]) throw new BadRequestException('Invalid variant type');
       const tags = [];
       const metaValue = {};
 
       for (const fieldId of product.meta[type]) {
-         await this.fieldService.validateField({ id: fieldId, value: mv[fieldId] });
+         await this.fieldService.validateField({ ctx, id: fieldId, value: mv[fieldId] });
          metaValue[fieldId] = mv[fieldId];
       }
 

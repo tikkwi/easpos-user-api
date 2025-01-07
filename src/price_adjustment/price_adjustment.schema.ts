@@ -61,6 +61,9 @@ export class Adjustment {
 
 @Schema()
 export default class PriceAdjustment extends APriceAdjustment {
+   @AppProp({ type: Boolean })
+   applyWholeSale: boolean;
+
    @AppProp({ type: [String], enum: EPriceAdjustment })
    types: EPriceAdjustment[];
 

@@ -35,8 +35,8 @@ export default class StockUnitService extends BaseService<StockUnit> {
       super();
    }
 
-   async getStockLeft({ id }: Pick<FindByIdDto, 'id'>) {
-      const repository = await this.getRepository();
+   async getStockLeft({ ctx: { connection }, id }: FindByIdDto) {
+      const repository = await this.getRepository(connection);
       let sL = 0;
       const { data } = await repository.find({
          filter: { productVariant: id, isOutOfStock: false },
@@ -45,8 +45,14 @@ export default class StockUnitService extends BaseService<StockUnit> {
       return { data: sL };
    }
 
-   async getStockUnit({ barcode, variantId, populate, lean }: GetStockUnitDto) {
-      const repository = await this.getRepository();
+   async getStockUnit({
+      ctx: { connection },
+      barcode,
+      variantId,
+      populate,
+      lean,
+   }: GetStockUnitDto) {
+      const repository = await this.getRepository(connection);
       return repository.findOne({
          filter: { barcode, productVariant: variantId },
          errorOnNotFound: true,
@@ -55,6 +61,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
    }
 
    async getStockPurchased({
+      ctx,
       barcode,
       variantId,
       quantity,
@@ -62,11 +69,14 @@ export default class StockUnitService extends BaseService<StockUnit> {
       customerId,
       isFoc,
    }: GetStockPurchasedDto) {
-      const repository = await this.getRepository();
-      const { data: baseUnit } = await this.unitService.getBase({ unitId: quantity.unitId });
-      const { data: baseQuantity } = await this.unitService.exchangeUnit({ current: [quantity] });
+      const repository = await this.getRepository(ctx.connection);
+      const { data: baseUnit } = await this.unitService.getBase({ ctx, unitId: quantity.unitId });
+      const { data: baseQuantity } = await this.unitService.exchangeUnit({
+         ctx,
+         current: [quantity],
+      });
       const { data: customer } = customerId
-         ? await this.customerService.getCustomer({ id: customerId })
+         ? await this.customerService.getCustomer({ ctx, id: customerId })
          : { data: undefined };
       let missingQuantity = baseQuantity;
       const units: Array<PurchasedStockUnit> = [];
@@ -84,6 +94,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
                quantity: {
                   amount: (
                      await this.unitService.exchangeUnit({
+                        ctx,
                         current: [{ amount: updQty }],
                         targetId: quantity.unitId,
                      })
@@ -133,6 +144,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
       };
       ({ data: stock } = barcode
          ? await this.getStockUnit({
+              ctx,
               barcode,
               populate: { path: 'productVariant', populate: ['product'] },
            })

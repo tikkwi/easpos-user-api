@@ -1,6 +1,5 @@
-import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import { FindByIdDto, FindDto } from '@common/dto/core.dto';
-import { ExchangeUnitDto } from '@shared/unit/unit.dto';
+import { OmitType } from '@nestjs/swagger';
+import { BaseDto, FindDto } from '@common/dto/core.dto';
 import {
    IsBoolean,
    IsMongoId,
@@ -45,12 +44,7 @@ export class GetStockUnitDto extends OmitType(FindDto, ['errorOnNotFound']) {
    variantId?: string;
 }
 
-export class GetStockLeftDto extends IntersectionType(
-   PickType(FindByIdDto, ['id']),
-   PickType(ExchangeUnitDto, ['targetId']),
-) {}
-
-export class GetStockPurchasedDto {
+export class GetStockPurchasedDto extends BaseDto {
    @ValidateIf((o) => !o.variantId)
    @IsString()
    barcode?: string;

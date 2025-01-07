@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { MERCHANT } from '@common/constant';
 import Partner from './partner.schema';
-import { getServiceToken } from '@common/utils/misc';
+import { getServiceToken } from '@common/utils/regex';
 import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 import AppService from '@common/decorator/app_service.decorator';
 import { AUserService } from '@shared/user/user.service';
@@ -25,17 +25,17 @@ export default class PartnerService extends AUserService<Partner> {
       super();
    }
 
-   async create({ isSupplier, ...dto }: CreatePartnerDto) {
-      const repository = await this.getRepository();
+   async create({ ctx, isSupplier, ...dto }: CreatePartnerDto) {
+      const repository = await this.getRepository(ctx.connection);
 
       return await repository.create({
-         ...(await this.getCreateUserDto({ type: EUser.Partner, ...dto })),
+         ...(await this.getCreateUserDto({ ctx, type: EUser.Partner, ...dto })),
          isSupplier,
       });
    }
 
-   async getUser(dto: GetUserDto) {
-      const repository = await this.getRepository();
+   async getUser({ ctx: { connection }, ...dto }: GetUserDto) {
+      const repository = await this.getRepository(connection);
       return await repository.findOne({ filter: dto });
    }
 
