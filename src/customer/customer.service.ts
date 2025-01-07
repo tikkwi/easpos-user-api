@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { MERCHANT } from '@common/constant';
 import { CreateCustomerDto, GetCustomerDto } from './customer.dto';
 import { CustomerTierService } from '../customer_tier/customer_tier.service';
-import { getServiceToken } from '@common/utils/misc';
+import { getServiceToken } from '@common/utils/regex';
 import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 import AppService from '@common/decorator/app_service.decorator';
 import { AUserService } from '@shared/user/user.service';

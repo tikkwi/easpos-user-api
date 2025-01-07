@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { MERCHANT } from '@common/constant';
 import Partner from './partner.schema';
-import { getServiceToken } from '@common/utils/misc';
+import { getServiceToken } from '@common/utils/regex';
 import { MerchantServiceMethods } from '@common/dto/merchant.dto';
 import AppService from '@common/decorator/app_service.decorator';
 import { AUserService } from '@shared/user/user.service';
