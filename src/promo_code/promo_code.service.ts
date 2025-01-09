@@ -6,8 +6,11 @@ import { getBaseAdjustmentQuery } from '../price_adjustment/price_adjustment.ser
 
 @AppService()
 export class PromoCodeService extends BaseService<PromoCode> {
-   async getPromoCode({ code, lean, populate }: GetPromoCodeDto) {
-      const repository = await this.getRepository();
+   async getPromoCode(
+      { connection, session }: RequestContext,
+      { code, lean, populate }: GetPromoCodeDto,
+   ) {
+      const repository = await this.getRepository(connection, session);
       return await repository.findOne({
          filter: { code },
          errorOnNotFound: true,
@@ -15,8 +18,11 @@ export class PromoCodeService extends BaseService<PromoCode> {
       });
    }
 
-   async getAdjustmentWithPromoCode({ promoCode, ...dto }: GetAdjustmentWithPromoCodeDto) {
-      const repository = await this.getRepository();
+   async getAdjustmentWithPromoCode(
+      { connection, session }: RequestContext,
+      { promoCode, ...dto }: GetAdjustmentWithPromoCodeDto,
+   ) {
+      const repository = await this.getRepository(connection, session);
       return await repository.findOne({
          filter: { code: promoCode, ...getBaseAdjustmentQuery(dto, 'promotion') },
          errorOnNotFound: true,

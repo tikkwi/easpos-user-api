@@ -25,17 +25,17 @@ export default class PartnerService extends AUserService<Partner> {
       super();
    }
 
-   async create({ isSupplier, ...dto }: CreatePartnerDto) {
-      const repository = await this.getRepository();
+   async create(ctx: RequestContext, { isSupplier, ...dto }: CreatePartnerDto) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
 
       return await repository.create({
-         ...(await this.getCreateUserDto({ type: EUser.Partner, ...dto })),
+         ...(await this.getCreateUserDto(ctx, { type: EUser.Partner, ...dto })),
          isSupplier,
       });
    }
 
-   async getUser(dto: GetUserDto) {
-      const repository = await this.getRepository();
+   async getUser({ connection, session }: RequestContext, dto: GetUserDto) {
+      const repository = await this.getRepository(connection, session);
       return await repository.findOne({ filter: dto });
    }
 

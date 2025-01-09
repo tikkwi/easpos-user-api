@@ -11,11 +11,16 @@ export class UserAppService {
       @Inject(getServiceToken(MERCHANT)) private readonly merchantService: MerchantServiceMethods,
    ) {}
 
-   async test() {
-      return await this.appBroker.request({
-         action: (meta) => this.merchantService.tmpTst(meta),
-         cache: false,
-      });
+   async test(req?: Request) {
+      console.log(req);
+      return 'mingalarbr..';
+   }
+
+   async msTest() {
+      // return await this.appBroker.request({
+      //    action: (meta) => this.merchantService.tmpTst(meta),
+      //    cache: false,
+      // });
       // return 'mingalarbr..';
    }
 }

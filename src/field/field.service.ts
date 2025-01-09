@@ -7,8 +7,8 @@ import { isDateString, isMongoId, isNumber, isPhoneNumber, isURL } from 'class-v
 import { isBoolean } from 'lodash';
 
 export default class FieldService extends BaseService<Field> {
-   async validateField({ id, value }: FieldValue) {
-      const { data: fieldData } = await this.findById({ id });
+   async validateField(ctx: RequestContext, { id, value }: FieldValue) {
+      const { data: fieldData } = await this.findById(ctx, { id });
       let errMsg = '';
       if (!fieldData.isOptional && !value) errMsg = `${fieldData.name} is required`;
       else

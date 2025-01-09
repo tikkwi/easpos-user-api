@@ -18,17 +18,20 @@ export default class ProcurementService extends BaseService<Procurement> {
       super();
    }
 
-   async create({ supplierId, expenseIds, batches, ...dto }: CreateProcurementDto) {
-      const repository = await this.getRepository();
+   async create(
+      ctx: RequestContext,
+      { supplierId, expenseIds, batches, ...dto }: CreateProcurementDto,
+   ) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
 
-      const { data: supplier } = await this.partnerService.findById({ id: supplierId });
-      const { data: expenses } = await this.expenseService.findByIds({ ids: expenseIds });
+      const { data: supplier } = await this.partnerService.findById(ctx, { id: supplierId });
+      const { data: expenses } = await this.expenseService.findByIds(ctx, { ids: expenseIds });
       for (const batch of batches) {
          for (const { id, value } of batch.stock.metaValue) {
-            await this.fieldService.validateField({ id, value });
+            await this.fieldService.validateField(ctx, { id, value });
          }
          if (!batch.stock.stockVariantId)
-            await this.variantService.findById({ id: batch.stock.stockVariantId });
+            await this.variantService.findById(ctx, { id: batch.stock.stockVariantId });
       }
       return await repository.create({ supplier, expenses, batches, ...dto });
    }

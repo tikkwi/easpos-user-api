@@ -46,7 +46,7 @@ export default class StockLocation extends BaseSchema {
    @AppProp({ type: String, enum: ELocationStatus })
    status: ELocationStatus;
 
-   @AppProp({ type: SchemaTypes.Mixed }, { validators: [{ func: IsPeriod }] })
+   @AppProp({ type: String, required: false }, { validators: [{ func: IsPeriod }] })
    operatingSchedule?: string;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Address' })

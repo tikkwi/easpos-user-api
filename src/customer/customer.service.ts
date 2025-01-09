@@ -11,7 +11,6 @@ import Customer from './customer.schema';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import { EUser } from '@common/utils/enum';
 import AddressService from '@shared/address/address.service';
-import RequestContextService from '@common/core/request_context/request_context_service';
 import CategoryService from '@shared/category/category.service';
 
 @AppService()
@@ -27,29 +26,27 @@ export default class CustomerService extends AUserService<Customer> {
       super();
    }
 
-   async createUser({ addressId, ...dto }: CreateCustomerDto) {
-      const context = await this.moduleRef.resolve(RequestContextService);
-      const repository = await this.getRepository();
-      const { data: tier } = await this.tierService.getTier({ isBaseTier: true });
+   async createUser(ctx: RequestContext, { addressId, ...dto }: CreateCustomerDto) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
+      const { data: tier } = await this.tierService.getTier(ctx, { isBaseTier: true });
       const { data: address } = addressId
-         ? await this.addressService.findById({ id: addressId })
+         ? await this.addressService.findById(ctx, { id: addressId })
          : undefined;
       return await repository.create({
          ...dto,
          address,
          tier,
-         merchant: context.get('merchant').merchant,
+         merchant: ctx.merchant.merchant,
          type: EUser.Customer,
       });
    }
 
    //NOTE: This will prioritized auth user(if it customer). If need customer with id, use findById
-   async getCustomer({
-      id,
-   }: GetCustomerDto): Promise<{ data: Customer | undefined; message: string | undefined }> {
-      const context = await this.moduleRef.resolve(RequestContextService);
-      const repository = await this.getRepository();
-      const authUser = context.get('user');
+   async getCustomer(
+      { connection, session, user: authUser }: RequestContext,
+      { id }: GetCustomerDto,
+   ): Promise<{ data: Customer | undefined; message: string | undefined }> {
+      const repository = await this.getRepository(connection, session);
       const isCustomerLoggedIn = authUser.type === EUser.Customer;
       if (!isCustomerLoggedIn && !id) return { data: undefined, message: 'Customer not logged in' };
       const { data: user } = await repository.findOne({

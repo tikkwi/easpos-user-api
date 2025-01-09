@@ -10,11 +10,11 @@ export default class ExpenseService extends BaseService<Expense> {
       super();
    }
 
-   async create({ products, ...dto }: CreateExpenseDto) {
-      const repository = await this.getRepository();
+   async create(ctx: RequestContext, { products, ...dto }: CreateExpenseDto) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
       const variantIds: Array<any> = products.map((p) => p.id);
       const percents = products.map((p) => p.percent);
-      await this.productVariantService.findByIds({ ids: variantIds });
+      await this.productVariantService.findByIds(ctx, { ids: variantIds });
       return repository.create({
          ...dto,
          effectiveProducts: variantIds,

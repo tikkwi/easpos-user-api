@@ -10,8 +10,8 @@ export class CustomerTierService extends BaseService<CustomerTier> {
       super();
    }
 
-   async getTier({ id, isBaseTier }: GetTierDto) {
-      const repository = await this.getRepository();
+   async getTier({ connection, session }: RequestContext, { id, isBaseTier }: GetTierDto) {
+      const repository = await this.getRepository(connection, session);
       return await repository.findOne({
          filter: {
             id,
@@ -21,8 +21,8 @@ export class CustomerTierService extends BaseService<CustomerTier> {
       });
    }
 
-   async createTier(dto: CreateCustomerTierDto) {
-      const repository = await this.getRepository();
+   async createTier({ connection, session }: RequestContext, dto: CreateCustomerTierDto) {
+      const repository = await this.getRepository(connection, session);
       return await repository.create(dto);
    }
 }
