@@ -17,10 +17,10 @@ export class UserAppService {
    }
 
    async msTest() {
-      return await this.appBroker.request({
-         action: (meta) => this.merchantService.tmpTst(meta),
-         cache: false,
-      });
+      // return await this.appBroker.request({
+      //    action: (meta) => this.merchantService.tmpTst(meta),
+      //    cache: false,
+      // });
       // return 'mingalarbr..';
    }
 }

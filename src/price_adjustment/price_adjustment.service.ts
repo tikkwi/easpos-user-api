@@ -109,17 +109,12 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       super();
    }
 
-   async getApplicableAdjustments({
-      ctx,
-      promoCode,
-      customerId,
-      product,
-      sale,
-      ...dto
-   }: GetApplicableAdjustmentDto) {
-      const repository = await this.getRepository(ctx.connection);
-      const { data: customer } = await this.customerService.getCustomer({
-         ctx,
+   async getApplicableAdjustments(
+      ctx: RequestContext,
+      { promoCode, customerId, product, sale, ...dto }: GetApplicableAdjustmentDto,
+   ) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
+      const { data: customer } = await this.customerService.getCustomer(ctx, {
          id: customerId,
       });
       if (sale) {
@@ -138,15 +133,14 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       if (product)
          ({
             data: { variantId, price, appliedUnstackableVariant },
-         } = await this.stockUnitService.getStockPurchased({
+         } = await this.stockUnitService.getStockPurchased(ctx, {
             ...product,
             customerId,
          }));
       if (appliedUnstackableVariant)
          return { data: undefined, message: 'The un-stackable price variant is applied' };
       if (promoCode) {
-         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
-            ctx,
+         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode(ctx, {
             promoCode,
             variantId,
             price,
@@ -158,9 +152,8 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
             ...dto,
          });
          if (pC?.promotion) {
-            const { data: stockLeft } = await this.stockUnitService.getStockLeft({
+            const { data: stockLeft } = await this.stockUnitService.getStockLeft(ctx, {
                id: variantId,
-               ctx,
             });
             return await this.#filterProductAdjustments([pC.promotion], stockLeft);
          }
@@ -177,34 +170,34 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
                }),
             },
          });
-         const { data: stockLeft } = await this.stockUnitService.getStockLeft({
+         const { data: stockLeft } = await this.stockUnitService.getStockLeft(ctx, {
             id: variantId,
-            ctx,
          });
          return { data: await this.#filterProductAdjustments(adjustments, stockLeft) };
       }
    }
 
    //NOTE: protect to directly call not to trick sth like price
-   async nc_getAdjustedPrice({
-      ctx,
-      price,
-      productId,
-      quantity,
-      isMarkup,
-      adjustment: {
-         focStocksWithTargetAmount,
-         focStocks,
-         absoluteAdjustment,
-         percentageAdjustment,
-      },
-   }: GetAdjustedPriceDto) {
+   async nc_getAdjustedPrice(
+      ctx: RequestContext,
+      {
+         price,
+         productId,
+         quantity,
+         isMarkup,
+         adjustment: {
+            focStocksWithTargetAmount,
+            focStocks,
+            absoluteAdjustment,
+            percentageAdjustment,
+         },
+      }: GetAdjustedPriceDto,
+   ) {
       let focProducts: Array<ProductCompactDto> = [];
       if (focStocks || focStocksWithTargetAmount) {
          if (focStocksWithTargetAmount && !productId)
             throw new BadRequestException('ProductId is required');
-         ({ data: focProducts } = await this.getFocProducts({
-            ctx,
+         ({ data: focProducts } = await this.getFocProducts(ctx, {
             productId,
             quantity,
             focStocks,
@@ -218,26 +211,21 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       return { data: { price, focProducts } };
    }
 
-   async getFocProducts({
-      ctx,
-      productId,
-      quantity,
-      focStocks,
-      focStocksWithTargetAmount,
-   }: GetFocProductsDto) {
+   async getFocProducts(
+      ctx: RequestContext,
+      { productId, quantity, focStocks, focStocksWithTargetAmount }: GetFocProductsDto,
+   ) {
       const focProducts: Array<ProductCompactDto & { usedAdjustment: boolean }> = [];
       const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
 
-      const { data: pVs } = await this.productVariantService.findByIds({
-         ctx,
+      const { data: pVs } = await this.productVariantService.findByIds(ctx, {
          ids: pIds,
          populate: 'product',
          projection: { productVariant: 0 },
       });
 
       if (focStocksWithTargetAmount) {
-         const { data: tProduct } = await this.productService.findById({
-            ctx,
+         const { data: tProduct } = await this.productService.findById(ctx, {
             id: productId,
             lean: false,
          });
@@ -252,8 +240,7 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       for (let i = 0; i < pIds.length; i++) {
          const {
             data: { units },
-         } = await this.stockUnitService.getStockPurchased({
-            ctx,
+         } = await this.stockUnitService.getStockPurchased(ctx, {
             variantId: pIds[i],
             nextBatchOnStockOut: true,
             isFoc: true,

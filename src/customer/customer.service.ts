@@ -26,11 +26,11 @@ export default class CustomerService extends AUserService<Customer> {
       super();
    }
 
-   async createUser({ ctx, addressId, ...dto }: CreateCustomerDto) {
-      const repository = await this.getRepository(ctx.connection);
-      const { data: tier } = await this.tierService.getTier({ ctx, isBaseTier: true });
+   async createUser(ctx: RequestContext, { addressId, ...dto }: CreateCustomerDto) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
+      const { data: tier } = await this.tierService.getTier(ctx, { isBaseTier: true });
       const { data: address } = addressId
-         ? await this.addressService.findById({ ctx, id: addressId })
+         ? await this.addressService.findById(ctx, { id: addressId })
          : undefined;
       return await repository.create({
          ...dto,
@@ -42,11 +42,11 @@ export default class CustomerService extends AUserService<Customer> {
    }
 
    //NOTE: This will prioritized auth user(if it customer). If need customer with id, use findById
-   async getCustomer({
-      ctx: { connection, user: authUser },
-      id,
-   }: GetCustomerDto): Promise<{ data: Customer | undefined; message: string | undefined }> {
-      const repository = await this.getRepository(connection);
+   async getCustomer(
+      { connection, session, user: authUser }: RequestContext,
+      { id }: GetCustomerDto,
+   ): Promise<{ data: Customer | undefined; message: string | undefined }> {
+      const repository = await this.getRepository(connection, session);
       const isCustomerLoggedIn = authUser.type === EUser.Customer;
       if (!isCustomerLoggedIn && !id) return { data: undefined, message: 'Customer not logged in' };
       const { data: user } = await repository.findOne({

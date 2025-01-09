@@ -1,8 +1,8 @@
-import { BaseDto, CoreDto } from '@common/dto/core.dto';
+import { CoreDto } from '@common/dto/core.dto';
 import { IsBoolean, IsMongoId, ValidateIf } from 'class-validator';
 import CustomerTier from './customer_tier.schema';
 
-export class GetTierDto extends BaseDto {
+export class GetTierDto {
    @ValidateIf((o) => o.isBaseTier === undefined)
    @IsMongoId()
    id?: string;

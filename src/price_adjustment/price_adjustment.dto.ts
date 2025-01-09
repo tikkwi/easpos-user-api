@@ -13,7 +13,6 @@ import { GetStockPurchasedDto } from '../stock_unit/stock_unit.dto';
 import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 import { Adjustment } from './price_adjustment.schema';
-import { BaseDto } from '@common/dto/core.dto';
 
 class PreliminaryProductVariantDto {
    @IsMongoId()
@@ -37,10 +36,11 @@ class PreliminarySaleDto {
    price: Amount;
 }
 
-export class GetApplicableAdjustmentDto extends IntersectionType(
-   BaseDto,
-   PickType(NewSaleDto, ['currencyId', 'paymentMethodId', 'customerId']),
-) {
+export class GetApplicableAdjustmentDto extends PickType(NewSaleDto, [
+   'currencyId',
+   'paymentMethodId',
+   'customerId',
+]) {
    @IsOptional()
    @IsString()
    promoCode: string;
@@ -56,7 +56,7 @@ export class GetApplicableAdjustmentDto extends IntersectionType(
    sale?: PreliminarySaleDto;
 }
 
-export class GetAdjustedPriceDto extends BaseDto {
+export class GetAdjustedPriceDto {
    @IsBoolean()
    isMarkup: boolean;
 
@@ -104,7 +104,6 @@ export class GetBaseAdjustmentQueryDto extends PickType(NewSaleDto, [
 }
 
 export class GetFocProductsDto extends IntersectionType(
-   BaseDto,
    PickType(GetAdjustedPriceDto, ['quantity']),
    PickType(Adjustment, ['focStocksWithTargetAmount', 'focStocks']),
 ) {

@@ -16,15 +16,18 @@ export default class ProductService extends BaseService<Product> {
       super();
    }
 
-   async create({ ctx, tagsDto, categoryDto, unitId, meta: mta, ...dto }: CreateProductDto) {
-      const repository = await this.getRepository(ctx.connection);
+   async create(
+      ctx: RequestContext,
+      { tagsDto, categoryDto, unitId, meta: mta, ...dto }: CreateProductDto,
+   ) {
+      const repository = await this.getRepository(ctx.connection, ctx.session);
       const tags = [];
-      const { data: category } = await this.categoryService.getCategory(categoryDto);
-      const { data: unit } = await this.unitService.findById({ ctx, id: unitId });
+      const { data: category } = await this.categoryService.getCategory(ctx, categoryDto);
+      const { data: unit } = await this.unitService.findById(ctx, { id: unitId });
       let meta = mta;
       if (tagsDto)
          for (const tg of tagsDto) {
-            const { data: tag } = await this.categoryService.getCategory(tg);
+            const { data: tag } = await this.categoryService.getCategory(ctx, tg);
             tags.push(tag);
          }
       if (!meta) meta = { default: [] };

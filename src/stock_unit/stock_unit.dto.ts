@@ -1,5 +1,5 @@
 import { OmitType } from '@nestjs/swagger';
-import { BaseDto, FindDto } from '@common/dto/core.dto';
+import { FindDto } from '@common/dto/core.dto';
 import {
    IsBoolean,
    IsMongoId,
@@ -44,7 +44,7 @@ export class GetStockUnitDto extends OmitType(FindDto, ['errorOnNotFound']) {
    variantId?: string;
 }
 
-export class GetStockPurchasedDto extends BaseDto {
+export class GetStockPurchasedDto {
    @ValidateIf((o) => !o.variantId)
    @IsString()
    barcode?: string;

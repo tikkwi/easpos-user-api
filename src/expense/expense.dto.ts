@@ -1,9 +1,8 @@
-import { IntersectionType, OmitType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
 import Expense from './expense.schema';
 import { IsMongoId, Max, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { EExpenseScope } from '@common/utils/enum';
 import { Type } from 'class-transformer';
-import { BaseDto } from '@common/dto/core.dto';
 
 class ProductCostContribution {
    @IsMongoId()
@@ -14,10 +13,10 @@ class ProductCostContribution {
    percent: number;
 }
 
-export class CreateExpenseDto extends IntersectionType(
-   BaseDto,
-   OmitType(Expense, ['effectiveProducts', 'contributionPercent']),
-) {
+export class CreateExpenseDto extends OmitType(Expense, [
+   'effectiveProducts',
+   'contributionPercent',
+]) {
    @ValidateIf((o) => o.scope !== EExpenseScope.WholeBusiness)
    @ValidateNested({ each: true })
    @Type(() => ProductCostContribution)
