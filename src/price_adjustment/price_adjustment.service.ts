@@ -16,6 +16,7 @@ import ProductService from '../product/product.service';
 import { ProductVariantService } from '../product_variant/product_variant.service';
 import { pick } from 'lodash';
 import { ProductCompactDto } from '../product/product.dto';
+import { ModuleRef } from '@nestjs/core';
 
 export const getBaseAdjustmentQuery = (
    {
@@ -100,6 +101,7 @@ export const getBaseAdjustmentQuery = (
 
 export default class PriceAdjustmentService extends BaseService<PriceAdjustment> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       private readonly stockUnitService: StockUnitService,
       private readonly customerService: CustomerService,
       private readonly promoCodeService: PromoCodeService,
@@ -109,12 +111,17 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       super();
    }
 
-   async getApplicableAdjustments(
-      ctx: RequestContext,
-      { promoCode, customerId, product, sale, ...dto }: GetApplicableAdjustmentDto,
-   ) {
+   async getApplicableAdjustments({
+      ctx,
+      promoCode,
+      customerId,
+      product,
+      sale,
+      ...dto
+   }: GetApplicableAdjustmentDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
-      const { data: customer } = await this.customerService.getCustomer(ctx, {
+      const { data: customer } = await this.customerService.getCustomer({
+         ctx,
          id: customerId,
       });
       if (sale) {
@@ -133,14 +140,16 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       if (product)
          ({
             data: { variantId, price, appliedUnstackableVariant },
-         } = await this.stockUnitService.getStockPurchased(ctx, {
+         } = await this.stockUnitService.getStockPurchased({
+            ctx,
             ...product,
             customerId,
          }));
       if (appliedUnstackableVariant)
          return { data: undefined, message: 'The un-stackable price variant is applied' };
       if (promoCode) {
-         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode(ctx, {
+         const { data: pC } = await this.promoCodeService.getAdjustmentWithPromoCode({
+            ctx,
             promoCode,
             variantId,
             price,
@@ -218,14 +227,16 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       const focProducts: Array<ProductCompactDto & { usedAdjustment: boolean }> = [];
       const pIds = focStocksWithTargetAmount ?? focStocks.map(({ stockId }) => stockId);
 
-      const { data: pVs } = await this.productVariantService.findByIds(ctx, {
+      const { data: pVs } = await this.productVariantService.findByIds({
+         ctx,
          ids: pIds,
          populate: 'product',
          projection: { productVariant: 0 },
       });
 
       if (focStocksWithTargetAmount) {
-         const { data: tProduct } = await this.productService.findById(ctx, {
+         const { data: tProduct } = await this.productService.findById({
+            ctx,
             id: productId,
             lean: false,
          });
@@ -240,7 +251,8 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
       for (let i = 0; i < pIds.length; i++) {
          const {
             data: { units },
-         } = await this.stockUnitService.getStockPurchased(ctx, {
+         } = await this.stockUnitService.getStockPurchased({
+            ctx,
             variantId: pIds[i],
             nextBatchOnStockOut: true,
             isFoc: true,

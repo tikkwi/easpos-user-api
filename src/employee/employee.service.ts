@@ -9,10 +9,12 @@ import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import Employee from './employee.schema';
 import AddressService from '@shared/address/address.service';
 import CategoryService from '@shared/category/category.service';
+import { ModuleRef } from '@nestjs/core';
 
 @AppService()
 export default class EmployeeService extends AUserService<Employee> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,
       protected readonly addressService: AddressService,

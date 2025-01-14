@@ -1,14 +1,19 @@
 import Field from '../field/field.schema';
 import { BadRequestException } from '@nestjs/common';
 import BaseService from '@common/core/base/base.service';
-import { FieldValue } from '@common/dto/entity.dto';
 import { EField } from '@common/utils/enum';
 import { isDateString, isMongoId, isNumber, isPhoneNumber, isURL } from 'class-validator';
 import { isBoolean } from 'lodash';
+import { ValidateFieldDto } from './field.dto';
+import { ModuleRef } from '@nestjs/core';
 
 export default class FieldService extends BaseService<Field> {
-   async validateField(ctx: RequestContext, { id, value }: FieldValue) {
-      const { data: fieldData } = await this.findById(ctx, { id });
+   constructor(protected readonly moduleRef: ModuleRef) {
+      super();
+   }
+
+   async validateField({ ctx, id, value }: ValidateFieldDto) {
+      const { data: fieldData } = await this.findById({ ctx, id });
       let errMsg = '';
       if (!fieldData.isOptional && !value) errMsg = `${fieldData.name} is required`;
       else

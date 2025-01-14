@@ -12,10 +12,12 @@ import AddressService from '@shared/address/address.service';
 import { CreatePartnerDto } from './partner.dto';
 import { EUser } from '@common/utils/enum';
 import CategoryService from '@shared/category/category.service';
+import { ModuleRef } from '@nestjs/core';
 
 @AppService()
 export default class PartnerService extends AUserService<Partner> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,
       protected readonly addressService: AddressService,
@@ -25,16 +27,16 @@ export default class PartnerService extends AUserService<Partner> {
       super();
    }
 
-   async create(ctx: RequestContext, { isSupplier, ...dto }: CreatePartnerDto) {
+   async create({ ctx, isSupplier, ...dto }: CreatePartnerDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
 
       return await repository.create({
-         ...(await this.getCreateUserDto(ctx, { type: EUser.Partner, ...dto })),
+         ...(await this.getCreateUserDto({ ctx, type: EUser.Partner, ...dto })),
          isSupplier,
       });
    }
 
-   async getUser({ connection, session }: RequestContext, dto: GetUserDto) {
+   async getUser({ ctx: { connection, session }, ...dto }: GetUserDto) {
       const repository = await this.getRepository(connection, session);
       return await repository.findOne({ filter: dto });
    }

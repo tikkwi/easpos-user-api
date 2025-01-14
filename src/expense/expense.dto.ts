@@ -3,6 +3,7 @@ import Expense from './expense.schema';
 import { IsMongoId, Max, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { EExpenseScope } from '@common/utils/enum';
 import { Type } from 'class-transformer';
+import { CoreDto } from '@common/dto/core.dto';
 
 class ProductCostContribution {
    @IsMongoId()
@@ -13,7 +14,7 @@ class ProductCostContribution {
    percent: number;
 }
 
-export class CreateExpenseDto extends OmitType(Expense, [
+export class CreateExpenseDto extends OmitType(CoreDto(Expense), [
    'effectiveProducts',
    'contributionPercent',
 ]) {

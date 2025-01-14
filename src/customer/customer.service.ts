@@ -12,10 +12,12 @@ import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import { EUser } from '@common/utils/enum';
 import AddressService from '@shared/address/address.service';
 import CategoryService from '@shared/category/category.service';
+import { ModuleRef } from '@nestjs/core';
 
 @AppService()
 export default class CustomerService extends AUserService<Customer> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       protected readonly db: AppRedisService,
       protected readonly appBroker: AppBrokerService,
       protected readonly categoryService: CategoryService,
@@ -26,11 +28,11 @@ export default class CustomerService extends AUserService<Customer> {
       super();
    }
 
-   async createUser(ctx: RequestContext, { addressId, ...dto }: CreateCustomerDto) {
+   async createUser({ ctx, addressId, ...dto }: CreateCustomerDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
       const { data: tier } = await this.tierService.getTier(ctx, { isBaseTier: true });
       const { data: address } = addressId
-         ? await this.addressService.findById(ctx, { id: addressId })
+         ? await this.addressService.findById({ ctx, id: addressId })
          : undefined;
       return await repository.create({
          ...dto,
@@ -42,10 +44,10 @@ export default class CustomerService extends AUserService<Customer> {
    }
 
    //NOTE: This will prioritized auth user(if it customer). If need customer with id, use findById
-   async getCustomer(
-      { connection, session, user: authUser }: RequestContext,
-      { id }: GetCustomerDto,
-   ): Promise<{ data: Customer | undefined; message: string | undefined }> {
+   async getCustomer({
+      ctx: { connection, session, user: authUser },
+      id,
+   }: GetCustomerDto): Promise<{ data: Customer | undefined; message: string | undefined }> {
       const repository = await this.getRepository(connection, session);
       const isCustomerLoggedIn = authUser.type === EUser.Customer;
       if (!isCustomerLoggedIn && !id) return { data: undefined, message: 'Customer not logged in' };

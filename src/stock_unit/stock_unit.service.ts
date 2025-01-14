@@ -11,6 +11,7 @@ import { FindByIdDto } from '@common/dto/core.dto';
 import { Amount } from '@common/dto/entity.dto';
 import { ProductVariantService } from '../product_variant/product_variant.service';
 import ProductService from '../product/product.service';
+import { ModuleRef } from '@nestjs/core';
 
 type PurchasedStockUnit = {
    stock: AppSchema<StockUnit>;
@@ -23,6 +24,7 @@ type PurchasedStockUnit = {
 @AppService()
 export default class StockUnitService extends BaseService<StockUnit> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       private readonly unitService: UnitService,
       private readonly customerService: CustomerService,
       private readonly variantService: ProductVariantService,
@@ -57,24 +59,23 @@ export default class StockUnitService extends BaseService<StockUnit> {
       });
    }
 
-   async getStockPurchased(
-      ctx: RequestContext,
-      {
-         barcode,
-         variantId,
-         quantity,
-         nextBatchOnStockOut,
-         customerId,
-         isFoc,
-      }: GetStockPurchasedDto,
-   ) {
+   async getStockPurchased({
+      ctx,
+      barcode,
+      variantId,
+      quantity,
+      nextBatchOnStockOut,
+      customerId,
+      isFoc,
+   }: GetStockPurchasedDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
-      const { data: baseUnit } = await this.unitService.getBase(ctx, { unitId: quantity.unitId });
-      const { data: baseQuantity } = await this.unitService.exchangeUnit(ctx, {
+      const { data: baseUnit } = await this.unitService.getBase({ ctx, unitId: quantity.unitId });
+      const { data: baseQuantity } = await this.unitService.exchangeUnit({
+         ctx,
          current: [quantity],
       });
       const { data: customer } = customerId
-         ? await this.customerService.getCustomer(ctx, { id: customerId })
+         ? await this.customerService.getCustomer({ ctx, id: customerId })
          : { data: undefined };
       let missingQuantity = baseQuantity;
       const units: Array<PurchasedStockUnit> = [];
@@ -91,7 +92,8 @@ export default class StockUnitService extends BaseService<StockUnit> {
                stock: stk,
                quantity: {
                   amount: (
-                     await this.unitService.exchangeUnit(ctx, {
+                     await this.unitService.exchangeUnit({
+                        ctx,
                         current: [{ amount: updQty }],
                         targetId: quantity.unitId,
                      })

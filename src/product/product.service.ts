@@ -6,28 +6,27 @@ import { CreateProductDto } from './product.dto';
 import UnitService from '@shared/unit/unit.service';
 import { isMongoId, isString } from 'class-validator';
 import CategoryService from '@shared/category/category.service';
+import { ModuleRef } from '@nestjs/core';
 
 @AppService()
 export default class ProductService extends BaseService<Product> {
    constructor(
+      protected readonly moduleRef: ModuleRef,
       private readonly categoryService: CategoryService,
       private readonly unitService: UnitService,
    ) {
       super();
    }
 
-   async create(
-      ctx: RequestContext,
-      { tagsDto, categoryDto, unitId, meta: mta, ...dto }: CreateProductDto,
-   ) {
+   async create({ ctx, tagsDto, categoryDto, unitId, meta: mta, ...dto }: CreateProductDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
       const tags = [];
-      const { data: category } = await this.categoryService.getCategory(ctx, categoryDto);
-      const { data: unit } = await this.unitService.findById(ctx, { id: unitId });
+      const { data: category } = await this.categoryService.getCategory({ ctx, ...categoryDto });
+      const { data: unit } = await this.unitService.findById({ ctx, id: unitId });
       let meta = mta;
       if (tagsDto)
          for (const tg of tagsDto) {
-            const { data: tag } = await this.categoryService.getCategory(ctx, tg);
+            const { data: tag } = await this.categoryService.getCategory({ ctx, ...tg });
             tags.push(tag);
          }
       if (!meta) meta = { default: [] };

@@ -3,10 +3,14 @@ import AppService from '@common/decorator/app_service.decorator';
 import BaseService from '@common/core/base/base.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import CustomerTier from './customer_tier.schema';
+import { ModuleRef } from '@nestjs/core';
 
 @AppService()
 export class CustomerTierService extends BaseService<CustomerTier> {
-   constructor(private readonly db: AppRedisService) {
+   constructor(
+      protected readonly moduleRef: ModuleRef,
+      private readonly db: AppRedisService,
+   ) {
       super();
    }
 
