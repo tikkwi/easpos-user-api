@@ -39,7 +39,6 @@ export default class CustomerService extends AUserService<Customer> {
          address,
          tier,
          merchant: ctx.merchant.merchant,
-         type: EUser.Customer,
       });
    }
 

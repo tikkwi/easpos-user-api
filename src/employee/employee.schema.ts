@@ -3,7 +3,7 @@ import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import User from '@shared/user/user.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import EmployeeRole from '../employee_role/employee_role.schema';
-import { Amount, UserRole } from '@common/dto/entity.dto';
+import { Amount } from '@common/dto/entity.dto';
 import {
    IsBoolean,
    IsMongoId,
@@ -27,10 +27,6 @@ export class ProductionContribution {
 }
 
 export class EmployeeConfig {
-   @ValidateNested()
-   @Type(() => UserRole)
-   defaultRole?: UserRole;
-
    @ValidateNested({ each: true })
    @Type(() => ProductionContribution)
    productionContributions?: ProductionContribution[];
@@ -56,6 +52,9 @@ export class EmployeeConfig {
 export default class Employee extends IntersectionType(User, PartialType(EmployeeConfig)) {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'EmployeeRole' })
    role: EmployeeRole;
+
+   @AppProp({ type: Boolean, default: false })
+   isOwner?: boolean;
 }
 
 export const EmployeeSchema = SchemaFactory.createForClass(Employee);

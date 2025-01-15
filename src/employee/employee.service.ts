@@ -10,6 +10,8 @@ import Employee from './employee.schema';
 import AddressService from '@shared/address/address.service';
 import CategoryService from '@shared/category/category.service';
 import { ModuleRef } from '@nestjs/core';
+import { CreateEmployeeDto } from './employee.dto';
+import { EmployeeRoleService } from '../employee_role/employee_role.service';
 
 @AppService()
 export default class EmployeeService extends AUserService<Employee> {
@@ -19,9 +21,22 @@ export default class EmployeeService extends AUserService<Employee> {
       protected readonly appBroker: AppBrokerService,
       protected readonly addressService: AddressService,
       protected readonly categoryService: CategoryService,
+      private readonly employeeRoleService: EmployeeRoleService,
       @Inject(getServiceToken(MERCHANT)) protected readonly merchantService: MerchantServiceMethods,
    ) {
       super();
+   }
+
+   async createEmployee({ roleId, isOwner, ...dto }: CreateEmployeeDto) {
+      const repository = await this.getRepository(dto.ctx.connection, dto.ctx.session);
+      if (isOwner) {
+         const { data: owner } = await repository.findOne({ filter: { isOwner: true } });
+         if (owner) throw new Error('Owner already exists');
+      }
+      const { data: role } = roleId
+         ? await this.employeeRoleService.findById({ id: roleId })
+         : undefined;
+      return await repository.create({ role, ...(await this.getCreateUserDto(dto)) });
    }
 
    // async loginUser(dto: LoginDto) {

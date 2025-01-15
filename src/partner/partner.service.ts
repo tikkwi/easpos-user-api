@@ -10,7 +10,6 @@ import { GetUserDto } from '@shared/user/user.dto';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import AddressService from '@shared/address/address.service';
 import { CreatePartnerDto } from './partner.dto';
-import { EUser } from '@common/utils/enum';
 import CategoryService from '@shared/category/category.service';
 import { ModuleRef } from '@nestjs/core';
 
@@ -31,7 +30,7 @@ export default class PartnerService extends AUserService<Partner> {
       const repository = await this.getRepository(ctx.connection, ctx.session);
 
       return await repository.create({
-         ...(await this.getCreateUserDto({ ctx, type: EUser.Partner, ...dto })),
+         ...(await this.getCreateUserDto({ ctx, ...dto })),
          isSupplier,
       });
    }

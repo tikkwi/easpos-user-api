@@ -28,6 +28,8 @@
 - Use `Entity`(include only entity's id) `EntityFull`(include all entity's fields) `EntityCompact`(include only some
   meta name, description etc.)
     - eg. `Product, ProductFull, ProductCompact`
+- Only request other app's service at the end of the first party app's service wherever possible to be able to roll back
+  the transaction if something goes wrong
 
 ## Don't
 
