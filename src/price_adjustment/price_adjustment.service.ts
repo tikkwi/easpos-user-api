@@ -187,7 +187,7 @@ export default class PriceAdjustmentService extends BaseService<PriceAdjustment>
    }
 
    //NOTE: protect to directly call not to trick sth like price
-   async nc_getAdjustedPrice(
+   async getAdjustedPrice(
       ctx: RequestContext,
       {
          price,

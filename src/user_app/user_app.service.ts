@@ -21,11 +21,10 @@ export class UserAppService {
       });
    }
 
-   async createMerchant(dto: CreateMerchantDto) {
+   async createMerchant({ ctx, ...dto }: CreateMerchantDto) {
       const merchant = await this.appBroker.request<Merchant>({
-         action: async (meta) => await this.merchantService.nhtp_createMerchant(dto, meta),
+         action: (meta) => this.merchantService.createMerchant(dto, meta),
       });
-      console.log('gta', merchant);
       return merchant;
    }
 }

@@ -1,7 +1,8 @@
-import { Body, Get, Post, Query } from '@nestjs/common';
+import { Body, Get, Post, Query, Req } from '@nestjs/common';
 import { UserAppService } from './user_app.service';
 import AppController from '@common/decorator/app_controller.decorator';
 import { CreateMerchantDto } from '@common/dto/merchant.dto';
+import { Request } from 'express';
 
 @AppController()
 export class UserAppController {
@@ -18,7 +19,7 @@ export class UserAppController {
    }
 
    @Post('create-merchant')
-   async createMerchant(@Body() dto: CreateMerchantDto) {
-      return this.service.createMerchant(dto);
+   async createMerchant(@Body() dto: CreateMerchantDto, @Req() { ctx }: Request) {
+      return this.service.createMerchant({ ctx, ...dto });
    }
 }

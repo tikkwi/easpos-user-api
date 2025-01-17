@@ -23,8 +23,6 @@
 
 - ```Service``` class ***must*** extend ```CoreService``` and use ```AppService``` rather than ```Injectable```
 - ```Controller``` class ***must*** extend ```CoreController``` and use ```AppController``` rather than ```Controller```
-- ```Hanlder``` that shouldn't allow direct http communication (only allow inter-service interaction) ***must*** start
-  with `nc_` (we don't need validation for these handlers)
 - Use `Entity`(include only entity's id) `EntityFull`(include all entity's fields) `EntityCompact`(include only some
   meta name, description etc.)
     - eg. `Product, ProductFull, ProductCompact`
@@ -44,7 +42,7 @@
 ## NOTE
 
 - ### Cautions about ```Request Scope Service```
-    - While ```Request Scope Service``` provide convenient way to maintain request-specific instance, it raise tons of
+    - While ```Request Scope Service``` provide convenient way to maintain request-specific instance, it raises tons of
       challenges
     - ```Default Scope Service``` create only once and by the time they are create ```Request Scope Dependencies```
       are ```undefined``` and as ```Default Scope Service``` won't re-create instance, these will be ```undefined```
@@ -52,3 +50,8 @@
     - So we'll have to use run-time dep resolver like ```ModuleRef``` every time we need throughout the service
     - So, we should avoid ```Request Scope``` as much as we can and should handle ```Request``` specific state
       with ```Interceptor```.
+- ### Request Context (HTTP)
+    - Why we don't add request context to body(which is more flexible, we don't need @Req on every handler) is becz
+      class-validator validate `DTO` on the request body and trigger `Max call stack size exceeded` error. Whether
+      `@Allow, @Exclude, @ValidateIf=> false or ever valid custom validator` can't help to avoid validating request
+      context
