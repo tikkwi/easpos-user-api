@@ -1,4 +1,4 @@
-import { Schema } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
@@ -38,3 +38,5 @@ export class ProductSale extends BaseSchema {
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Sale' })
    sale: AppSchema<Sale>;
 }
+
+export const ProductSaleSchema = SchemaFactory.createForClass(ProductSale);

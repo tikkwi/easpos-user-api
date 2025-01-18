@@ -1,4 +1,4 @@
-import { Schema } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import BaseSchema from '@common/core/base/base.schema';
 import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { ProductSale } from '../product_sale/product_sale.schema';
@@ -27,3 +27,5 @@ export class Sale extends IntersectionType(
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
    paymentMethod: AppSchema<Category>;
 }
+
+export const SaleSchema = SchemaFactory.createForClass(Sale);

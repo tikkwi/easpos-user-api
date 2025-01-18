@@ -1,6 +1,7 @@
-import { IsBoolean, IsMongoId, IsOptional, ValidateIf } from 'class-validator';
-import { PickType } from '@nestjs/swagger';
-import EmployeeRole from './employee_role.schema';
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { EmployeeConfig } from '../employee/employee.schema';
+import { CategoryDto } from '@shared/category/category.dto';
 
 export class GetEmployeeRoleDto {
    @IsOptional()
@@ -16,8 +17,13 @@ export class GetEmployeeRoleDto {
    merchantId?: string;
 }
 
-export class CreateEmployeeRoleDto extends PickType(EmployeeRole, ['isOwner', 'basicSalary']) {
-   @ValidateIf((o) => o.isOwner)
-   @IsMongoId()
-   merchantId?: string;
+export class CreateEmployeeRoleDto {
+   @ValidateNested()
+   @Type(() => EmployeeConfig)
+   config: EmployeeConfig;
+
+   @IsNotEmpty()
+   @ValidateNested()
+   @Type(() => CategoryDto)
+   category: CategoryDto;
 }

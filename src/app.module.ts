@@ -6,10 +6,9 @@ import CoreHttpModule from '@common/core/module/core_http.module';
 import AddressModule from '@shared/address/address.module';
 import CustomerModule from './customer/customer.module';
 import { PartnerModule } from './partner/partner.module';
-import { AUTH_CREDENTIAL, USER_BASIC_AUTH_PATHS } from '@common/constant';
+import { AUTH_CREDENTIAL } from '@common/constant';
 import { getGrpcClient } from '@common/utils/misc';
 import { ClientsModule } from '@nestjs/microservices';
-import BasicAuthMiddleware from '@common/middleware/basic_auth.middleware';
 
 const [clients, providers] = getGrpcClient([AUTH_CREDENTIAL]);
 
@@ -29,6 +28,6 @@ const [clients, providers] = getGrpcClient([AUTH_CREDENTIAL]);
 })
 export class AppModule implements NestModule {
    configure(consumer: MiddlewareConsumer) {
-      consumer.apply(BasicAuthMiddleware).forRoutes(...USER_BASIC_AUTH_PATHS);
+      // consumer.apply(BasicAuthMiddleware).forRoutes(...USER_BASIC_AUTH_PATHS);
    }
 }

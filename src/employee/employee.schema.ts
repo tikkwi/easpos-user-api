@@ -11,10 +11,10 @@ import {
    IsString,
    Max,
    Min,
+   ValidateIf,
    ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IntersectionType, PartialType } from '@nestjs/swagger';
 
 export class ProductionContribution {
    @IsNumber()
@@ -49,9 +49,13 @@ export class EmployeeConfig {
 }
 
 @Schema()
-export default class Employee extends IntersectionType(User, PartialType(EmployeeConfig)) {
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'EmployeeRole' })
-   role: EmployeeRole;
+export default class Employee extends User {
+   @ValidateIf((o) => !o.isOwner)
+   @AppProp({ type: SchemaTypes.ObjectId, ref: 'EmployeeRole', required: false })
+   role?: EmployeeRole;
+
+   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: EmployeeConfig })
+   config?: EmployeeConfig;
 
    @AppProp({ type: Boolean, default: false })
    isOwner?: boolean;

@@ -1,4 +1,4 @@
-import { Schema } from '@nestjs/mongoose';
+import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import APriceAdjustment from '@common/schema/price_adjustment.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { EPriceAdjustment } from '@common/utils/enum';
@@ -101,3 +101,5 @@ export default class PriceAdjustment extends APriceAdjustment {
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'ProductVariant' }] })
    appliedProducts?: Array<AppSchema<ProductVariant>>;
 }
+
+export const PriceAdjustmentSchema = SchemaFactory.createForClass(PriceAdjustment);
