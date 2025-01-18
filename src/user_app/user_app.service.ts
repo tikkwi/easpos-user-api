@@ -6,6 +6,7 @@ import { CreateMerchantDto, MerchantServiceMethods } from '@common/dto/merchant.
 import BaseService from '@common/core/base/base.service';
 import { ModuleRef } from '@nestjs/core';
 import EmployeeService from '../employee/employee.service';
+import { Types } from 'mongoose';
 import AppContext from '@common/core/app_context.service';
 
 @Injectable()
@@ -30,8 +31,7 @@ export class UserAppService extends BaseService {
    }
 
    async createMerchant({ ctx, ...dto }: CreateMerchantDto) {
-      // const merchantId = new Types.ObjectId().toString();
-      const merchantId = '678ba3d859471cff15d4a3e7';
+      const merchantId = new Types.ObjectId().toString();
       const [connection, session] = await AppContext.getSession(merchantId, true);
       ctx.connection = connection;
       ctx.session = session;
@@ -47,10 +47,9 @@ export class UserAppService extends BaseService {
          password: '1111234',
          mobileNo: dto.mobileNo,
       });
-      return { data: employee };
-      // const merchant = await this.appBroker.request<Merchant>({
-      //    action: (meta) => this.merchantService.createMerchant({ _id: merchantId, ...dto }, meta),
-      // });
-      // return { data: { merchant, owner: employee } };
+      const merchant = await this.appBroker.request<Merchant>({
+         action: (meta) => this.merchantService.createMerchant({ _id: merchantId, ...dto }, meta),
+      });
+      return { data: { merchant, owner: employee } };
    }
 }

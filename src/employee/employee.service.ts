@@ -29,15 +29,18 @@ export default class EmployeeService extends AUserService<Employee> {
 
    async createEmployee({ roleId, isOwner, ctx, ...dto }: CreateEmployeeDto) {
       const repository = await this.getRepository(ctx.connection, ctx.session);
-      // if (isOwner) {
-      //    const { data: owner } = await repository.findOne({ filter: { isOwner: true } });
-      //    if (owner) throw new Error('Owner already exists');
-      // }
+      if (isOwner) {
+         const { data: owner } = await repository.findOne({ filter: { isOwner: true } });
+         if (owner) throw new Error('Owner already exists');
+      }
       const { data: role } = roleId
          ? await this.employeeRoleService.findById({ id: roleId })
          : { data: undefined };
-      return await repository.create({ role, isOwner, ...dto });
-      // return await repository.create({ role, ...(await this.getCreateUserDto({ ctx, ...dto })) });
+      return await repository.create({
+         role,
+         isOwner,
+         ...(await this.getCreateUserDto({ ctx, ...dto })),
+      });
    }
 
    // async loginUser(dto: LoginDto) {
