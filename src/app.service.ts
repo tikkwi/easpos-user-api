@@ -1,16 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { getServiceToken } from '@common/utils/regex';
 import { MERCHANT } from '@common/constant';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
 import { CreateMerchantDto, MerchantServiceMethods } from '@common/dto/merchant.dto';
 import BaseService from '@common/core/base/base.service';
 import { ModuleRef } from '@nestjs/core';
-import EmployeeService from '../employee/employee.service';
+import EmployeeService from './employee/employee.service';
 import { Types } from 'mongoose';
 import AppContext from '@common/core/app_context.service';
+import $AppService from '@common/decorator/app_service.decorator';
 
-@Injectable()
-export class UserAppService extends BaseService {
+@$AppService()
+export default class AppService extends BaseService {
    constructor(
       protected readonly moduleRef: ModuleRef,
       private readonly appBroker: AppBrokerService,

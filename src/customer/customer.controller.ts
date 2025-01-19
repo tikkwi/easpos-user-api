@@ -10,8 +10,8 @@ export default class CustomerController {
    constructor(protected readonly service: CustomerService) {}
 
    @Post('login')
-   async login(@Req() req: Request, @Body() dto: LoginDto, @Req() { ctx }: Request) {
-      return this.service.login(req, { ctx, ...dto });
+   async login(@Req() req: Request, @Body() dto: LoginDto) {
+      return this.service.login(req, dto);
    }
 
    @Post('logout')

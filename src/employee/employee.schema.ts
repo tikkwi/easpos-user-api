@@ -15,6 +15,7 @@ import {
    ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import PermissionTag from '@shared/permission_tag/permission_tag.schema';
 
 export class ProductionContribution {
    @IsNumber()
@@ -43,9 +44,6 @@ export class EmployeeConfig {
 
    @IsBoolean()
    allowAdminApp: boolean;
-
-   @IsString({ each: true })
-   permissions?: Array<string>;
 }
 
 @Schema()
@@ -59,6 +57,9 @@ export default class Employee extends User {
 
    @AppProp({ type: Boolean, default: false })
    isOwner?: boolean;
+
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'PermissionTag' }], required: false })
+   permissions?: Array<AppSchema<PermissionTag>>;
 }
 
 export const EmployeeSchema = SchemaFactory.createForClass(Employee);

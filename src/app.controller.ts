@@ -1,12 +1,12 @@
 import { Body, Get, Post, Query, Req } from '@nestjs/common';
-import { UserAppService } from './user_app.service';
-import AppController from '@common/decorator/app_controller.decorator';
 import { CreateMerchantDto } from '@common/dto/merchant.dto';
 import { Request } from 'express';
+import AppService from './app.service';
+import $AppController from '@common/decorator/app_controller.decorator';
 
-@AppController()
-export class UserAppController {
-   constructor(private readonly service: UserAppService) {}
+@$AppController()
+export default class AppController {
+   constructor(private readonly service: AppService) {}
 
    @Get('test')
    async test() {
