@@ -1,4 +1,3 @@
-import { SHARED_SCHEMAS } from '@common/constant';
 import { BranchSchema } from '../branch/branch.schema';
 import { CustomerSchema } from '../customer/customer.schema';
 import { CustomerTierSchema } from '../customer_tier/customer_tier.schema';
@@ -23,6 +22,8 @@ import { StockUnitSchema } from '../stock_unit/stock_unit.schema';
 import { Schema } from 'mongoose';
 import { EmployeeSchema } from '../employee/employee.schema';
 import { EmployeeRoleSchema } from '../employee_role/employee_role.schema';
+import { RequestMethod } from '@nestjs/common';
+import { SHARED_SCHEMAS } from '@common/constant/app.constant';
 
 export const APP_SCHEMAS: Array<[string, Schema]> = [
    ...SHARED_SCHEMAS,
@@ -49,4 +50,10 @@ export const APP_SCHEMAS: Array<[string, Schema]> = [
    ['Shelf', ShelfSchema],
    ['StockLocation', StockLocationSchema],
    ['StockUnit', StockUnitSchema],
+];
+
+export const BASIC_AUTH_PATHS = [
+   { path: '/test', method: RequestMethod.GET },
+   { path: '/create-merchant', method: RequestMethod.POST },
+   { path: '/employee/login', method: RequestMethod.POST },
 ];

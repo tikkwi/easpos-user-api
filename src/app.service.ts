@@ -21,10 +21,6 @@ export default class AppService extends BaseService {
       super();
    }
 
-   async test(req?: Request) {
-      return 'mingalarbr..';
-   }
-
    async msTest(dto: { message: string }) {
       return await this.appBroker.request({
          action: (meta) => this.merchantService.tmpTst(dto, meta),

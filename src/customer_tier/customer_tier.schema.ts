@@ -1,10 +1,10 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SchemaTypes } from 'mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
 import BaseSchema from '@common/core/base/base.schema';
 import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
+import { SchemaTypes } from 'mongoose';
 import { IsAppString } from '@common/validator';
-import { CALENDAR_DATE } from '@common/constant';
+import { CALENDAR_DATE } from '@common/constant/app.constant';
 
 class TierBenefit {
    @IsString()
@@ -26,7 +26,10 @@ class TierBenefit {
    permissions?: Array<string>;
 }
 
+const cd = ['Day', 'Week', 'Month', 'Year'] as const;
+
 class SustainPoint {
+   // @IsAppString('include', { arr: cd })
    @IsAppString('include', { arr: CALENDAR_DATE })
    cycleUnit: CalendarDate;
 

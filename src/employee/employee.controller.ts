@@ -4,11 +4,13 @@ import AppController from '@common/decorator/app_controller.decorator';
 import { Body, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { LoginDto } from '@shared/user/user.dto';
+import { SkipUsers } from '@common/decorator/allowance.decorator';
 
-@AppController('merchant-user', [EAllowedUser.Employee])
+@AppController('employee', [EAllowedUser.Employee])
 export class EmployeeController {
    constructor(private readonly service: EmployeeService) {}
 
+   @SkipUsers([EAllowedUser.Employee])
    @Post('login')
    async login(@Req() req: Request, @Body() dto: LoginDto) {
       return this.service.login(req, dto);

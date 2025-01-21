@@ -9,8 +9,8 @@ export default class AppController {
    constructor(private readonly service: AppService) {}
 
    @Get('test')
-   async test() {
-      return this.service.test();
+   async test(@Query('msg') message: string) {
+      return message;
    }
 
    @Get('ms-test')

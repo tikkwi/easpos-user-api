@@ -31,15 +31,19 @@
 
 ## Don't
 
-- Except standalone files that won't have connection with other files (eg. ```constant```),don't aggregate exports with
-  barrel files(```index.ts``` -> ```export * ...```) which can raise tan of unexpected errors and circular dependencies
-  which is very hard to trace..
 - End-point can't be more than four segment (eg. ```/admin-api/user/```)
-- User services **_mustn't_** be handle by user-api-app as for the offline app, as user is needed for authentication and
-  codes will live in client device(for offline variant), there is a risk of misuse
 - Don't store object_id in nested object, instead just save string version of object_id
 
 ## NOTE
+
+- ### Cautions about `Barrel Files` (```index.ts``` -> ```export * ...```)
+    - Barrel files are used to aggregate exports from several files into a single file. This is a common pattern in
+      JavaScript and TypeScript projects because it allows you to import multiple modules from a directory using a
+      single
+      path.
+    - However, barrel files can cause unexpected errors and circular dependencies which is very hard to trace.
+    - So, it's better to avoid barrel files as much as possible.
+    - In short word, don't barrel export from a directory that has dependencies(`import`)
 
 - ### Cautions about ```Request Scope Service```
     - While ```Request Scope Service``` provide convenient way to maintain request-specific instance, it raises tons of
