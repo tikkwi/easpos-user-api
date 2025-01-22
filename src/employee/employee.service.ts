@@ -12,6 +12,10 @@ import CategoryService from '@shared/category/category.service';
 import { ModuleRef } from '@nestjs/core';
 import { CreateEmployeeDto } from './employee.dto';
 import { EmployeeRoleService } from '../employee_role/employee_role.service';
+import { Request } from 'express';
+import { AuthenticateLoginMfaDto } from '@shared/user/user.dto';
+import { connectMerchantDb, initializeCollections } from '@common/utils/misc';
+import { PermissionTagSchema } from '@shared/permission_tag/permission_tag.schema';
 
 @AppService()
 export default class EmployeeService extends AUserService<Employee> {
@@ -43,10 +47,21 @@ export default class EmployeeService extends AUserService<Employee> {
       });
    }
 
-   // async loginUser(dto: LoginDto) {
-   //    return await this.login(
-   //       dto,
-   //       async (id) => (await this.merchantService.merchantWithAuth({ id })).data,
-   //    );
-   // }
+   async authenticateLoginMfa(req: Request, dto: AuthenticateLoginMfaDto) {
+      await connectMerchantDb(req.ctx, dto.merchantId);
+      const repository = await this.getRepository(req.ctx.connection, req.ctx.session);
+      initializeCollections(req.ctx.connection, [['PermissionTag', PermissionTagSchema]]);
+      const { data: user }: any = await repository.findOne({
+         id: dto.userId,
+         errorOnNotFound: true,
+         options: {
+            populate: [
+               { path: 'role', populate: ['permissions'], strictPopulate: false },
+               { path: 'permissions', strictPopulate: false },
+               { path: 'tier', strictPopulate: false },
+            ],
+         },
+      });
+      return await super.$authenticateLoginMfa(req, user, dto);
+   }
 }

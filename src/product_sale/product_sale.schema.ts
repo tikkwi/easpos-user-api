@@ -17,7 +17,7 @@ export class ProductSale extends BaseSchema {
    productVariant: AppSchema<ProductVariant>;
 
    //TODO: pending -> false on sale resolved
-   @AppProp({ type: Boolean, default: true, immutable: false })
+   @AppProp({ type: Boolean, default: true })
    isPending: boolean;
 
    @AppProp({ type: Number })

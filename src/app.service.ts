@@ -6,9 +6,10 @@ import { CreateMerchantDto, MerchantServiceMethods } from '@common/dto/merchant.
 import BaseService from '@common/core/base/base.service';
 import { ModuleRef } from '@nestjs/core';
 import EmployeeService from './employee/employee.service';
-import { Types } from 'mongoose';
+import { connection, Types } from 'mongoose';
 import AppContext from '@common/core/app_context.service';
 import $AppService from '@common/decorator/app_service.decorator';
+import { connectMerchantDb } from '@common/utils/misc';
 
 @$AppService()
 export default class AppService extends BaseService {
@@ -29,10 +30,7 @@ export default class AppService extends BaseService {
 
    async createMerchant({ ctx, ...dto }: CreateMerchantDto) {
       const merchantId = new Types.ObjectId().toString();
-      const [connection, session] = await AppContext.getSession(merchantId, true);
-      ctx.connection = connection;
-      ctx.session = session;
-      ctx.merchantId = merchantId;
+      await connectMerchantDb(ctx, merchantId, true);
       ctx.rollback = async () => {
          await connection.db.dropDatabase();
          AppContext.delete(merchantId);

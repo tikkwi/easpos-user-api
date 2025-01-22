@@ -3,7 +3,7 @@ import EmployeeService from './employee.service';
 import AppController from '@common/decorator/app_controller.decorator';
 import { Body, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { LoginDto } from '@shared/user/user.dto';
+import { AuthenticateLoginMfaDto, LoginDto } from '@shared/user/user.dto';
 import { SkipUsers } from '@common/decorator/allowance.decorator';
 
 @AppController('employee', [EAllowedUser.Employee])
@@ -14,6 +14,12 @@ export class EmployeeController {
    @Post('login')
    async login(@Req() req: Request, @Body() dto: LoginDto) {
       return this.service.login(req, dto);
+   }
+
+   @SkipUsers([EAllowedUser.Employee])
+   @Post('authenticate-login-mfa')
+   async authLoginMfa(@Req() req: Request, @Body() dto: AuthenticateLoginMfaDto) {
+      return this.service.authenticateLoginMfa(req, dto);
    }
 
    @Post('logout')

@@ -56,4 +56,10 @@ export const BASIC_AUTH_PATHS = [
    { path: '/test', method: RequestMethod.GET },
    { path: '/create-merchant', method: RequestMethod.POST },
    { path: '/employee/login', method: RequestMethod.POST },
+   { path: '/employee/authenticate-login-mfa', method: RequestMethod.POST },
+];
+export const MANUAL_CONNECTION_ROUTES = [
+   '/create-merchant',
+   '/employee/login',
+   '/employee/authenticate-login-mfa',
 ];
