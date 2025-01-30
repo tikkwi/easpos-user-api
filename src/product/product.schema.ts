@@ -1,33 +1,13 @@
-import { IsBoolean, IsMongoId, IsNumber, IsOptional, Max, Min, ValidateIf } from 'class-validator';
+import { IsMongoId, IsNumber, Max, Min, ValidateIf } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import Category from '@shared/category/category.schema';
-import { EProduct, EProductStatus, EType } from '@common/utils/enum';
+import { EProduct, EProductStatus, EType } from '@common/utils/enum/misc.enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import Unit from '@shared/unit/unit.schema';
 import { IsRecord } from '@common/validator/is_record.validator';
-
-export class PriceVariant {
-   @IsMongoId() //NOTE:tag category
-   id: string;
-
-   @IsNumber({ maxDecimalPlaces: 2 })
-   @Min(0.01)
-   @Max(0.99)
-   baseMultiplier: number;
-
-   @IsBoolean() //NOTE:is stackable to promotion
-   isStackable: boolean;
-
-   @IsOptional()
-   @IsBoolean()
-   foc?: boolean;
-
-   @ValidateIf((o) => o.foc)
-   @IsNumber()
-   focQuantity?: number;
-}
+import { PriceVariant } from '@common/dto/entity.dto';
 
 export class Ingredient {
    @IsMongoId()
@@ -48,7 +28,7 @@ export class BaseProduct extends BaseSchema {
    attachments?: string[];
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'Category' }], default: [] })
-   tags?: Array<AppSchema<Category>>;
+   tags?: Array<Category>;
 }
 
 @Schema()
@@ -66,10 +46,10 @@ export default class Product extends BaseProduct {
    statuses: EProductStatus[];
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
-   category: AppSchema<Category>;
+   category: Category;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Unit' })
-   unit: AppSchema<Unit>;
+   unit: Unit;
 
    @AppProp({ type: Number })
    unitQuantity: number;

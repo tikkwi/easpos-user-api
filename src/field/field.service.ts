@@ -1,7 +1,7 @@
 import Field from '../field/field.schema';
 import { BadRequestException } from '@nestjs/common';
 import BaseService from '@common/core/base/base.service';
-import { EField } from '@common/utils/enum';
+import { EField } from '@common/utils/enum/misc.enum';
 import { isDateString, isMongoId, isNumber, isPhoneNumber, isURL } from 'class-validator';
 import { isBoolean } from 'lodash';
 import { ValidateFieldDto } from './field.dto';

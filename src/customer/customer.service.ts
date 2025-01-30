@@ -9,7 +9,7 @@ import { AUserService } from '@shared/user/user.service';
 import AppRedisService from '@common/core/app_redis/app_redis.service';
 import Customer from './customer.schema';
 import AppBrokerService from '@common/core/app_broker/app_broker.service';
-import { EUser } from '@common/utils/enum';
+import { EUser } from '@common/utils/enum/misc.enum';
 import AddressService from '@shared/address/address.service';
 import CategoryService from '@shared/category/category.service';
 import { ModuleRef } from '@nestjs/core';
@@ -46,12 +46,16 @@ export default class CustomerService extends AUserService<Customer> {
    async getCustomer({
       ctx: { connection, session, user: authUser },
       id,
+      errorOnNotFound,
+      ...rest
    }: GetCustomerDto): Promise<{ data: Customer | undefined; message: string | undefined }> {
       const repository = await this.getRepository(connection, session);
       const isCustomerLoggedIn = authUser.type === EUser.Customer;
       if (!isCustomerLoggedIn && !id) return { data: undefined, message: 'Customer not logged in' };
       const { data: user } = await repository.findOne({
          id: isCustomerLoggedIn ? authUser.id : id,
+         errorOnNotFound,
+         options: { ...(rest ?? {}) },
       });
       return { data: user, message: undefined };
    }

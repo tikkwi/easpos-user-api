@@ -1,31 +1,38 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import BaseSchema from '@common/core/base/base.schema';
-import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { ProductSale } from '../product_sale/product_sale.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
-import Unit from '@shared/unit/unit.schema';
-import Category from '@shared/category/category.schema';
+import Purchase from '@shared/purchase/purchase.schema';
+import PriceAdjustment from '../price_adjustment/price_adjustment.schema';
+import Customer from '../customer/customer.schema';
 
+// @Schema()
+// export class Sale extends OmitType(ProductSale, ['isPending', 'appliedAdjustment']) {
+//    @AppProp({ type: Number })
+//    price: number;
+//
+//    @AppProp({ type: Number })
+//    finalPrice: number;
+//
+//    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'ProductSale' }] })
+//    products: Array<ProductSale>;
+//
+//    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Unit' })
+//    currency: Unit;
+//
+//    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
+//    paymentMethod: Category;
+// }
 @Schema()
-export class Sale extends IntersectionType(
-   BaseSchema,
-   OmitType(ProductSale, ['isPending', 'appliedAdjustment']),
-) {
-   @AppProp({ type: Number })
-   price: number;
-
-   @AppProp({ type: Number })
-   finalPrice: number;
+export class Sale extends Purchase {
+   @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'PriceAdjustment' }], default: [] })
+   appliedAdjustments: Array<PriceAdjustment>;
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'ProductSale' }] })
-   products: Array<AppSchema<ProductSale>>;
+   products: Array<ProductSale>;
 
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Unit' })
-   currency: AppSchema<Unit>;
-
-   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Category' })
-   paymentMethod: AppSchema<Category>;
+   @AppProp({ type: SchemaTypes.ObjectId, ref: 'Customer', required: false })
+   customer?: Customer;
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);

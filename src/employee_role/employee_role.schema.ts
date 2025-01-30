@@ -16,7 +16,7 @@ export default class EmployeeRole extends BaseSchema {
    config: EmployeeConfig;
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'PermissionTag' }], default: [] })
-   permissions: Array<AppSchema<PermissionTag>>;
+   permissions: Array<PermissionTag>;
 }
 
 export const EmployeeRoleSchema = SchemaFactory.createForClass(EmployeeRole);

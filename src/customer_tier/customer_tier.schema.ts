@@ -1,10 +1,9 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import AppProp from '@common/decorator/app_prop.decorator';
 import BaseSchema from '@common/core/base/base.schema';
-import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
-import { IsAppString } from '@common/validator';
-import { CALENDAR_DATE } from '@common/constant/app.constant';
+import { IsPeriod } from '@common/validator';
 
 class TierBenefit {
    @IsString()
@@ -26,23 +25,6 @@ class TierBenefit {
    permissions?: Array<string>;
 }
 
-const cd = ['Day', 'Week', 'Month', 'Year'] as const;
-
-class SustainPoint {
-   // @IsAppString('include', { arr: cd })
-   @IsAppString('include', { arr: CALENDAR_DATE })
-   cycleUnit: CalendarDate;
-
-   //TODO: validate max_day -> 30, max_week -> 4, max_month -> 12, max_year -> 10
-   @IsNumber()
-   @Min(0)
-   cycleAmount: number;
-
-   @IsNumber()
-   @Min(0)
-   pointAmount: number;
-}
-
 @Schema()
 export default class CustomerTier extends BaseSchema {
    @AppProp({ type: String })
@@ -60,8 +42,8 @@ export default class CustomerTier extends BaseSchema {
    @Max(100)
    level: number;
 
-   @AppProp({ type: SchemaTypes.Mixed, required: false }, { type: SustainPoint })
-   sustainPoint?: SustainPoint;
+   @AppProp({ type: SchemaTypes.Mixed, required: false }, { validators: [{ func: IsPeriod }] })
+   sustainPeriod?: string;
 
    @AppProp({ type: String, required: false })
    icon?: string;

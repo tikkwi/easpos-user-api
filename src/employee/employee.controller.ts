@@ -1,4 +1,4 @@
-import { EAllowedUser } from '@common/utils/enum';
+import { EAllowedUser } from '@common/utils/enum/misc.enum';
 import EmployeeService from './employee.service';
 import AppController from '@common/decorator/app_controller.decorator';
 import { Body, Post, Req, Res } from '@nestjs/common';

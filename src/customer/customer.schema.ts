@@ -5,7 +5,7 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import CustomerTier from '../customer_tier/customer_tier.schema';
 import { IsMongoId } from 'class-validator';
 import { IsRecord } from '@common/validator/is_record.validator';
-import { EType } from '@common/utils/enum';
+import { EType } from '@common/utils/enum/misc.enum';
 import { IsPeriod } from '@common/validator';
 
 class ClaimedPromoCode {
@@ -21,7 +21,7 @@ export default class Customer extends BaseUser {
    guest: boolean;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'CustomerTier', required: false })
-   tier?: AppSchema<CustomerTier>;
+   tier?: CustomerTier;
 
    @AppProp({ type: Number, default: 0 })
    cash?: number;

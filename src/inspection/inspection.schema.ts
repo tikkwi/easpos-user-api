@@ -3,7 +3,7 @@ import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import Category from '@shared/category/category.schema';
-import { EInspectionStatus } from '@common/utils/enum';
+import { EInspectionStatus } from '@common/utils/enum/misc.enum';
 import SampleRecord from '../sample_record/sample_record.schema';
 
 @Schema()

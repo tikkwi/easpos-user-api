@@ -59,7 +59,7 @@ export default class Employee extends User {
    isOwner?: boolean;
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'PermissionTag' }], required: false })
-   permissions?: Array<AppSchema<PermissionTag>>;
+   permissions?: Array<PermissionTag>;
 }
 
 export const EmployeeSchema = SchemaFactory.createForClass(Employee);

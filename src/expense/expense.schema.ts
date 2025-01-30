@@ -1,5 +1,5 @@
 import { SchemaTypes } from 'mongoose';
-import { EExpense, EExpenseScope } from '@common/utils/enum';
+import { EExpense, EExpenseScope } from '@common/utils/enum/misc.enum';
 import { Max, Min, ValidateIf } from 'class-validator';
 import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
@@ -39,7 +39,7 @@ export default class Expense extends BaseSchema {
 
    @ValidateIf((o) => o.scope !== EExpenseScope.WholeBusiness)
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'ProductVariant' }] })
-   effectiveProducts?: Array<AppSchema<ProductVariant>>;
+   effectiveProducts?: Array<ProductVariant>;
 
    //TODO: validate align with effectiveProducts (dto must also be {id, percent})
    @ValidateIf((o) => o.scope !== EExpenseScope.WholeBusiness)

@@ -5,7 +5,7 @@ import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Amount } from '@common/dto/entity.dto';
 import { IsRecord } from '@common/validator/is_record.validator';
-import { EType } from '@common/utils/enum';
+import { EType } from '@common/utils/enum/misc.enum';
 
 @Schema()
 export class ProductVariant extends IntersectionType(

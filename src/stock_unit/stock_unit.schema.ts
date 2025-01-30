@@ -1,7 +1,7 @@
 import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
-import { EProductUnitStatus } from '@common/utils/enum';
+import { EProductUnitStatus } from '@common/utils/enum/misc.enum';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProductVariant } from '../product_variant/product_variant.schema';
 import Procurement from '../procurement/procurement.schema';
@@ -62,7 +62,7 @@ export default class StockUnit extends IntersectionType(
    metaValue?: any;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'ProductVariant' })
-   productVariant: AppSchema<ProductVariant>;
+   productVariant: ProductVariant;
 
    @AppProp({ type: SchemaTypes.ObjectId, ref: 'Procurement' })
    batch: Procurement;

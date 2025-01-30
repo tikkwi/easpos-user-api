@@ -4,7 +4,7 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import { IsNumber, Max, Min } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import { IsRecord } from '@common/validator/is_record.validator';
-import { EType } from '@common/utils/enum';
+import { EType } from '@common/utils/enum/misc.enum';
 
 function AdjPriority() {
    return function (target: any, key: string) {

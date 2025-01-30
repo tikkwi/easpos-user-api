@@ -4,17 +4,16 @@ import StockUnit from './stock_unit.schema';
 import { BadRequestException } from '@nestjs/common';
 import UnitService from '@shared/unit/unit.service';
 import { GetStockPurchasedDto, GetStockUnitDto } from './stock_unit.dto';
-import { EProductUnitStatus } from '@common/utils/enum';
+import { EProductUnitStatus } from '@common/utils/enum/misc.enum';
 import CustomerService from '../customer/customer.service';
-import { PriceVariant } from '../product/product.schema';
 import { FindByIdDto } from '@common/dto/core.dto';
-import { Amount } from '@common/dto/entity.dto';
+import { Amount, PriceVariant } from '@common/dto/entity.dto';
 import { ProductVariantService } from '../product_variant/product_variant.service';
 import ProductService from '../product/product.service';
 import { ModuleRef } from '@nestjs/core';
 
 type PurchasedStockUnit = {
-   stock: AppSchema<StockUnit>;
+   stock: StockUnit;
    quantity: Amount;
    price: Amount;
    focQuantity?: Amount;
@@ -37,7 +36,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
       super();
    }
 
-   async getStockLeft({ connection, session }: RequestContext, { id }: FindByIdDto) {
+   async getStockLeft({ ctx: { connection, session }, id }: FindByIdDto) {
       const repository = await this.getRepository(connection, session);
       let sL = 0;
       const { data } = await repository.find({
@@ -47,10 +46,13 @@ export default class StockUnitService extends BaseService<StockUnit> {
       return { data: sL };
    }
 
-   async getStockUnit(
-      { connection, session }: RequestContext,
-      { barcode, variantId, populate, lean }: GetStockUnitDto,
-   ) {
+   async getStockUnit({
+      ctx: { connection, session },
+      barcode,
+      variantId,
+      populate,
+      lean,
+   }: GetStockUnitDto) {
       const repository = await this.getRepository(connection, session);
       return repository.findOne({
          filter: { barcode, productVariant: variantId },
@@ -83,7 +85,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
       const unitIds: Array<ObjectId | string> = [];
       const price = { amount: 0, unitId: stock.productVariant.basePrice.unitId };
       let appliedUnstackableVariant = false;
-      const updateQuantity = async (stk?: AppSchema<StockUnit>) => {
+      const updateQuantity = async (stk?: StockUnit) => {
          if (!stk?.isOutOfStock) {
             const updQty =
                stk.stockLeft >= missingQuantity ? missingQuantity : missingQuantity - stk.stockLeft;
@@ -136,13 +138,14 @@ export default class StockUnitService extends BaseService<StockUnit> {
             }
             price.amount += unt.price.amount;
             units.push(unt);
-            unitIds.push(stk.id);
+            unitIds.push(stk._id);
             if (!appliedUnstackableVariant)
                appliedUnstackableVariant = unt.priceVariant?.isStackable;
          }
       };
       ({ data: stock } = barcode
-         ? await this.getStockUnit(ctx, {
+         ? await this.getStockUnit({
+              ctx,
               barcode,
               populate: { path: 'productVariant', populate: ['product'] },
            })
@@ -189,7 +192,7 @@ export default class StockUnitService extends BaseService<StockUnit> {
             `Required ${baseQuantity} ${baseUnit.name} and only ${baseQuantity - missingQuantity} ${baseUnit.name} left`,
          );
       return {
-         data: { units, variantId: stock.productVariant.id, price, appliedUnstackableVariant },
+         data: { units, variantId: stock.productVariant._id, price, appliedUnstackableVariant },
       };
    }
 }

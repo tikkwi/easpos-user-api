@@ -12,6 +12,11 @@ import { Type } from 'class-transformer';
 import { Amount } from '@common/dto/entity.dto';
 import StockUnit from './stock_unit.schema';
 
+export class StockDto {
+   stock: StockUnit;
+   quantity: Amount;
+}
+
 export class CreateStockUnitDto extends OmitType(StockUnit, [
    'productVariant',
    'batch',

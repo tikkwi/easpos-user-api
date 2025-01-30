@@ -5,15 +5,15 @@ import { SchemaTypes } from 'mongoose';
 import { Amount } from '@common/dto/entity.dto';
 import { PayrollAdjustment } from '../payroll_adjustment/payroll_adjustment.schema';
 import Employee from '../employee/employee.schema';
-import { EStatus } from '@common/utils/enum';
+import { EApprovalStatus } from '@common/utils/enum';
 
 @Schema()
 export default class Payroll extends BaseSchema {
    @AppProp({ type: SchemaTypes.Mixed }, { type: Amount })
    baseSalary: Amount;
 
-   @AppProp({ type: String, enum: EStatus })
-   status: EStatus;
+   @AppProp({ type: String, enum: EApprovalStatus })
+   status: EApprovalStatus;
 
    @AppProp({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
    adjustments: PayrollAdjustment[];

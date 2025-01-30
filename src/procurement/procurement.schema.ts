@@ -7,7 +7,7 @@ import { IsEnum, IsMongoId, IsNumber, ValidateIf, ValidateNested } from 'class-v
 import { Type } from 'class-transformer';
 import { Amount, FieldValue } from '@common/dto/entity.dto';
 import { IntersectionType, OmitType, PickType } from '@nestjs/swagger';
-import { EInspectionStatus, EProcurementStatus } from '@common/utils/enum';
+import { EInspectionStatus, EProcurementStatus } from '@common/utils/enum/misc.enum';
 import Expense from '../expense/expense.schema';
 import Product from '../product/product.schema';
 

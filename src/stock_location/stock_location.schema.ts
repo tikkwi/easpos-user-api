@@ -4,7 +4,7 @@ import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaTypes } from 'mongoose';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
 import { Amount, Dimension } from '@common/dto/entity.dto';
-import { ELocationStatus } from '@common/utils/enum';
+import { ELocationStatus } from '@common/utils/enum/misc.enum';
 import Address from '@shared/address/address.schema';
 import { IsPeriod } from '@common/validator';
 

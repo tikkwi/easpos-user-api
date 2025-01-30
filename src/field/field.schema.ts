@@ -1,6 +1,6 @@
 import { Matches } from 'class-validator';
 import { regex } from '@common/utils/regex';
-import { EField } from '@common/utils/enum';
+import { EField } from '@common/utils/enum/misc.enum';
 import BaseSchema from '@common/core/base/base.schema';
 import AppProp from '@common/decorator/app_prop.decorator';
 import { SchemaFactory } from '@nestjs/mongoose';

@@ -1,7 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import Expense from './expense.schema';
 import { IsMongoId, Max, Min, ValidateIf, ValidateNested } from 'class-validator';
-import { EExpenseScope } from '@common/utils/enum';
+import { EExpenseScope } from '@common/utils/enum/misc.enum';
 import { Type } from 'class-transformer';
 import { CoreDto } from '@common/dto/core.dto';
 
